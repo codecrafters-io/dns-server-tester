@@ -20,5 +20,9 @@ var testerDefinition = testerutils.TesterDefinition{
 			Slug:     "receive-question-in-response",
 			TestFunc: testReceiveQuestionInResponse,
 		},
+		{
+			Slug:     "receive-answer-in-response",
+			TestFunc: testReceiveAnswerInResponse,
+		},
 	},
 }
