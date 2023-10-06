@@ -6,6 +6,7 @@ import (
 	"time"
 
 	tester_utils "github.com/codecrafters-io/tester-utils"
+	"github.com/miekg/dns"
 )
 
 const (
@@ -25,7 +26,11 @@ func testInit(stageHarness *tester_utils.StageHarness) error {
 	}
 	defer conn.Close()
 
-	_, err = conn.Write([]byte("ping"))
+	msg, err := getDnsMsgBytes()
+	if err != nil {
+		return err
+	}
+	_, err = conn.Write(msg)
 	if err != nil {
 		return fmt.Errorf("Error sending UDP packet: %v\n", err)
 	}
@@ -44,4 +49,17 @@ func testInit(stageHarness *tester_utils.StageHarness) error {
 	}
 
 	return nil
+}
+
+func getDnsMsgBytes() ([]byte, error) {
+	msg := new(dns.Msg)
+	msg.Id = dns.Id()
+	msg.SetQuestion("codecrafters.io.", dns.TypeA)
+
+	buf, err := msg.Pack()
+	if err != nil {
+		return nil, fmt.Errorf("Error encoding DNS message: %s\n", err)
+	}
+
+	return buf, nil
 }
