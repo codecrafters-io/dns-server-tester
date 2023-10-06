@@ -12,5 +12,9 @@ var testerDefinition = testerutils.TesterDefinition{
 			Slug:     "init",
 			TestFunc: testInit,
 		},
+		{
+			Slug:     "receive-response",
+			TestFunc: testReceiveEmptyResponse,
+		},
 	},
 }
