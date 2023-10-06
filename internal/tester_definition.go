@@ -24,5 +24,9 @@ var testerDefinition = testerutils.TesterDefinition{
 			Slug:     "receive-answer-in-response",
 			TestFunc: testReceiveAnswerInResponse,
 		},
+		{
+			Slug:     "parse-headers",
+			TestFunc: testHeaderParsing,
+		},
 	},
 }
