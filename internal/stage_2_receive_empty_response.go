@@ -46,7 +46,7 @@ func sendDNSQuery(id uint16, queryDomain, dnsServerAddr string) (*dns.Msg, error
 
 	response, _, err := c.Exchange(msg, dnsServerAddr)
 	if err != nil {
-		return nil, fmt.Errorf("DNS query failed: %s", err)
+		return nil, fmt.Errorf("DNS query failed: %s.\nIf you are seeing this after a while then it is likely that your server is not responding with appropriate id", err)
 	}
 
 	return response, nil
