@@ -5,12 +5,12 @@ import (
 )
 
 var testerDefinition = testerutils.TesterDefinition{
-	AntiCheatTestCases:    []testerutils.TestCase{},
-	ExecutableFileName: "script.sh",
+	AntiCheatTestCases: []testerutils.TestCase{},
+	ExecutableFileName: "your_server.sh",
 	TestCases: []testerutils.TestCase{
 		{
-			Slug:                    "init",
-			TestFunc:                testInit,
+			Slug:     "init",
+			TestFunc: testInit,
 		},
 	},
 }
