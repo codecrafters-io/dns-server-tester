@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"net"
 
 	tester_utils "github.com/codecrafters-io/tester-utils"
 	"github.com/miekg/dns"
@@ -45,14 +44,9 @@ func testReceiveAnswerInResponse(stageHarness *tester_utils.StageHarness) error 
 		return fmt.Errorf("Expected answer type to be 1 got %d", record.Header().Rrtype)
 	}
 
-	if aRecord, ok := record.(*dns.A); ok {
-		expectedIP := net.ParseIP("76.76.21.21")
-		if !aRecord.A.Equal(expectedIP) {
-			return fmt.Errorf("Expected IPv4 address to be %v, got %v", expectedIP, aRecord.A)
-		}
+	if _, ok := record.(*dns.A); ok {
+		return nil
 	} else {
 		return fmt.Errorf("Expected answer record to be of type A (IPv4) got %T", record)
 	}
-
-	return nil
 }

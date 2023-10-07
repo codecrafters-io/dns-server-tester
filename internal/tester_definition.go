@@ -28,5 +28,9 @@ var testerDefinition = testerutils.TesterDefinition{
 			Slug:     "parse-headers",
 			TestFunc: testHeaderParsing,
 		},
+		{
+			Slug:     "parse-question-basic",
+			TestFunc: testBasicQuestionParsing,
+		},
 	},
 }
