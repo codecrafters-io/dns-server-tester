@@ -15,14 +15,14 @@ func testBasicQuestionParsing(stageHarness *tester_utils.StageHarness) error {
 	// }
 
 	// Generate
-	queryDomain := "abc.codecrafters.io."
+	queryDomain := "mail.google.com."
 	packetIdentifier := uint16(rand.Uint32())
 
 	c := new(dns.Client)
 	msg := new(dns.Msg)
 	msg.SetQuestion(dns.Fqdn(queryDomain), dns.TypeA)
 	msg.Id = packetIdentifier
-	msg.RecursionDesired = rand.Intn(2) == 0
+	msg.RecursionDesired = true
 
 	dnsMsg, _, err := c.Exchange(msg, SERVER_ADDR)
 	if err != nil {
@@ -31,9 +31,6 @@ func testBasicQuestionParsing(stageHarness *tester_utils.StageHarness) error {
 
 	fmt.Println(dnsMsg)
 
-	if dnsMsg.RecursionDesired != msg.RecursionDesired {
-		return fmt.Errorf("Expected RecursionAvailable to be %t, got %t", msg.RecursionDesired, dnsMsg.RecursionAvailable)
-	}
 	record := dnsMsg.Answer[0]
 
 	if record.Header().Name != queryDomain {

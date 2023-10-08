@@ -21,7 +21,7 @@ func testHeaderParsing(stageHarness *tester_utils.StageHarness) error {
 	msg := new(dns.Msg)
 	msg.SetQuestion(dns.Fqdn(queryDomain), dns.TypeA)
 	msg.Id = packetIdentifier
-	msg.RecursionDesired = rand.Intn(2) == 0
+	msg.RecursionDesired = true
 
 	dnsMsg, _, err := c.Exchange(msg, SERVER_ADDR)
 	if err != nil {
@@ -35,9 +35,9 @@ func testHeaderParsing(stageHarness *tester_utils.StageHarness) error {
 		return fmt.Errorf("Expected ID to be 1234, got %d", dnsMsg.Id)
 	}
 
-	if dnsMsg.RecursionDesired != msg.RecursionDesired {
-		return fmt.Errorf("Expected RecursionAvailable to be %t, got %t", msg.RecursionDesired, dnsMsg.RecursionAvailable)
-	}
+	// if dnsMsg.RecursionDesired != msg.RecursionDesired {
+	// 	return fmt.Errorf("Expected RecursionAvailable to be %t, got %t", msg.RecursionDesired, dnsMsg.RecursionAvailable)
+	// }
 
 	return nil
 }

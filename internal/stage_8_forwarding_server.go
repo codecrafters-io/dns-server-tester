@@ -2,29 +2,37 @@ package internal
 
 import (
 	"fmt"
-	"math/rand"
+	"net"
 
 	tester_utils "github.com/codecrafters-io/tester-utils"
 	"github.com/miekg/dns"
 )
 
-func testCompressedQuestionParsing(stageHarness *tester_utils.StageHarness) error {
+func testForwarding(stageHarness *tester_utils.StageHarness) error {
 	// b := NewDnsServerBinary(stageHarness)
 	// if err := b.Run(); err != nil {
 	// 	return err
 	// }
 
 	// Generate
-	queryDomain := "abc.codecrafters.io."
-	packetIdentifier := uint16(rand.Uint32())
+	queryDomain := "codecrafters.io."
 
+	if err := testARecord(stageHarness, queryDomain, net.IPv4(76, 76, 21, 21)); err != nil {
+		return err
+	}
+
+	if err := testARecord(stageHarness, "google.com.", net.IPv4(142, 250, 183, 14)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func testARecord(stageHarness *tester_utils.StageHarness, queryDomain string, expectedIP net.IP) error {
 	c := new(dns.Client)
 	msg := new(dns.Msg)
 	msg.SetQuestion(dns.Fqdn(queryDomain), dns.TypeA)
-	msg.Question = append(msg.Question, dns.Question{Name: "def.codecrafters.io.", Qtype: dns.TypeA, Qclass: dns.ClassINET})
-	msg.Id = packetIdentifier
 	msg.RecursionDesired = true
-	msg.Compress = true
 
 	dnsMsg, _, err := c.Exchange(msg, SERVER_ADDR)
 	if err != nil {
@@ -33,9 +41,8 @@ func testCompressedQuestionParsing(stageHarness *tester_utils.StageHarness) erro
 
 	fmt.Println(dnsMsg)
 
-	for i, record := range dnsMsg.Answer {
-
-		if record.Header().Name != msg.Question[i].Name {
+	for _, record := range dnsMsg.Answer {
+		if record.Header().Name != queryDomain {
 			return fmt.Errorf("Expected answer domain name to be `%v` got `%v`", queryDomain, record.Header().Name)
 		}
 		if record.Header().Rrtype != dns.TypeA {
@@ -43,11 +50,13 @@ func testCompressedQuestionParsing(stageHarness *tester_utils.StageHarness) erro
 		}
 
 		if _, ok := record.(*dns.A); ok {
-			continue
+			// TODO: Actually test this once we have our home grown DNS server which the program under test will call
+			return nil
 		} else {
 			return fmt.Errorf("Expected answer record to be of type A (IPv4) got %T", record)
 		}
 
 	}
-	return nil
+
+	return fmt.Errorf("Expected IPv4 address to be %v. No such match found.", expectedIP)
 }
