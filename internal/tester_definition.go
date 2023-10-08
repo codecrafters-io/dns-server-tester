@@ -13,15 +13,15 @@ var testerDefinition = testerutils.TesterDefinition{
 			TestFunc: testInit,
 		},
 		{
-			Slug:     "receive-empty-response",
+			Slug:     "write-headers",
 			TestFunc: testReceiveEmptyResponse,
 		},
 		{
-			Slug:     "receive-question-in-response",
+			Slug:     "write-question-section",
 			TestFunc: testReceiveQuestionInResponse,
 		},
 		{
-			Slug:     "receive-answer-in-response",
+			Slug:     "write-answer-section",
 			TestFunc: testReceiveAnswerInResponse,
 		},
 		{
@@ -29,7 +29,7 @@ var testerDefinition = testerutils.TesterDefinition{
 			TestFunc: testHeaderParsing,
 		},
 		{
-			Slug:     "parse-question-basic",
+			Slug:     "parse-question",
 			TestFunc: testBasicQuestionParsing,
 		},
 		{
