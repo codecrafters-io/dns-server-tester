@@ -40,5 +40,9 @@ var testerDefinition = testerutils.TesterDefinition{
 			Slug:     "forwarding",
 			TestFunc: testForwarding,
 		},
+		{
+			Slug:     "more-records",
+			TestFunc: testMoreRecords,
+		},
 	},
 }
