@@ -32,5 +32,9 @@ var testerDefinition = testerutils.TesterDefinition{
 			Slug:     "parse-question-basic",
 			TestFunc: testBasicQuestionParsing,
 		},
+		{
+			Slug:     "parse-question-compressed",
+			TestFunc: testCompressedQuestionParsing,
+		},
 	},
 }
