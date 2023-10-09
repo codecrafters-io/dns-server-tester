@@ -8,7 +8,7 @@ import (
 
 func TestStages(t *testing.T) {
 	testCases := map[string]tester_utils_testing.TesterOutputTestCase{
-		"literal_character": {
+		"init": {
 			UntilStageSlug:      "init",
 			CodePath:            "./test_helpers/scenarios/init/failure",
 			ExpectedExitCode:    1,

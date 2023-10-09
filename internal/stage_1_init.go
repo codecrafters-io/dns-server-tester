@@ -13,10 +13,6 @@ const (
 	SERVER_ADDR = "127.0.0.1:2053"
 )
 
-func testInitEmpty(stageHarness *tester_utils.StageHarness) error {
-	return nil
-}
-
 // Example from the grep course
 func testInit(stageHarness *tester_utils.StageHarness) error {
 	var err error
