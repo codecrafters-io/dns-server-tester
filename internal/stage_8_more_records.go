@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"net"
 
 	tester_utils "github.com/codecrafters-io/tester-utils"
 	logger "github.com/codecrafters-io/tester-utils/logger"
@@ -19,14 +20,15 @@ func testMoreRecords(stageHarness *tester_utils.StageHarness) error {
 
 	logger := stageHarness.Logger
 
-	queryDomain := "codecrafters.io."
-
-	if err := testAAAARecrod(logger, "google.com."); err != nil {
+	queryDomain := randomDomainWithType(dns.TypeAAAA)
+	if err := testAAAARecrod(logger, queryDomain); err != nil {
 		return err
 	}
+	queryDomain = randomDomainWithType(dns.TypeMX)
 	if err := testMXRecord(logger, queryDomain); err != nil {
 		return err
 	}
+	queryDomain = randomDomainWithType(dns.TypeNS)
 	if err := testNSRecord(logger, queryDomain); err != nil {
 		return err
 	}
@@ -39,6 +41,7 @@ func testAAAARecrod(logger *logger.Logger, queryDomain string) error {
 	if err != nil {
 		return err
 	}
+	expectedIP := net.ParseIP(dnsRecords[queryDomain][dns.TypeAAAA])
 
 	if len(response.Answer) == 0 {
 		return fmt.Errorf("Expected some answer record to be present. Got none")
@@ -53,8 +56,12 @@ func testAAAARecrod(logger *logger.Logger, queryDomain string) error {
 			return fmt.Errorf("Expected answer type to be 1 got %d", record.Header().Rrtype)
 		}
 
-		if _, ok := record.(*dns.AAAA); ok {
-			continue
+		if aaaaRecord, ok := record.(*dns.AAAA); ok {
+			if !aaaaRecord.AAAA.Equal(expectedIP) {
+				return fmt.Errorf("Expected IPv4 address to be %v, got %v", expectedIP, aaaaRecord.AAAA)
+			} else {
+				return nil
+			}
 		} else {
 			return fmt.Errorf("Expected answer record to be of type A (IPv4) got %T", record)
 		}

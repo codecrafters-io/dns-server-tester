@@ -12,11 +12,13 @@ var dnsRecords = map[string]map[uint16]string{
 		dns.TypeAAAA:  "2001:db8::1",
 		dns.TypeCNAME: "example-cname.com.",
 		dns.TypeMX:    "10 mail.example.com.",
+		dns.TypeNS:    "ns1.example.com.",
 	},
 	"google.com.": {
 		dns.TypeA:    "172.217.3.110",
 		dns.TypeAAAA: "2607:f8b0:4006:801::200e",
 		dns.TypeMX:   "5 alt1.aspmx.l.google.com.",
+		dns.TypeNS:   "ns4.google.com.",
 	},
 	"facebook.com.": {
 		dns.TypeA:     "31.13.65.36",
@@ -29,13 +31,13 @@ var dnsRecords = map[string]map[uint16]string{
 	},
 	"stackoverflow.com.": {
 		dns.TypeA:     "151.101.129.69",
-		dns.TypeAAAA:  "151.101.1.69",
+		dns.TypeAAAA:  "2a73:2580:::face:b00c::25de",
 		dns.TypeCNAME: "stackoverflow.design",
 		dns.TypeMX:    "10 aspmx.l.google.com.",
 	},
 	"reddit.com.": {
 		dns.TypeA:    "151.101.65.140",
-		dns.TypeAAAA: "151.101.1.140",
+		dns.TypeAAAA: "2607:f8b0:4006:::200e",
 		dns.TypeMX:   "10 mail.reddit.com.",
 	},
 	"youtube.com.": {
@@ -80,6 +82,21 @@ var dnsRecords = map[string]map[uint16]string{
 	},
 }
 
+var dnsRecordsForCompression = map[string]map[uint16]string{
+	"longassdomainname.com.": {
+		dns.TypeA: "127.0.0.1",
+	},
+	"hey-there-i-hear-you-like-longassdomainname.com.": {
+		dns.TypeA: "172.217.3.110",
+	},
+	"this-is-a-long-domainname.io.": {
+		dns.TypeA: "31.13.65.36",
+	},
+	"abcdefghijklmnopqrstuvw.xyz": {
+		dns.TypeA: "140.82.113.3",
+	},
+}
+
 func domainsWithType(recordType uint16) []string {
 	var result []string
 	for domain, records := range dnsRecords {
@@ -92,6 +109,20 @@ func domainsWithType(recordType uint16) []string {
 
 func randomDomainWithType(recordType uint16) string {
 	domains := domainsWithType(recordType)
+	randomInt := rand.Intn(len(domains))
+	return domains[randomInt]
+}
+
+func longAssDomainNames() []string {
+	var result []string
+	for domain := range dnsRecordsForCompression {
+		result = append(result, domain)
+	}
+	return result
+}
+
+func randomLongAssDomainName() string {
+	domains := longAssDomainNames()
 	randomInt := rand.Intn(len(domains))
 	return domains[randomInt]
 }

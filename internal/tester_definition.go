@@ -33,16 +33,16 @@ var testerDefinition = testerutils.TesterDefinition{
 			TestFunc: testBasicQuestionParsing,
 		},
 		{
-			Slug:     "parse-question-compressed",
-			TestFunc: testCompressedQuestionParsing,
-		},
-		{
 			Slug:     "forwarding-server",
 			TestFunc: testForwarding,
 		},
 		{
 			Slug:     "more-record-types",
 			TestFunc: testMoreRecords,
+		},
+		{
+			Slug:     "parse-question-compressed",
+			TestFunc: testCompressedQuestionParsing,
 		},
 		{
 			Slug:     "dns-resolution",

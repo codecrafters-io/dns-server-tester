@@ -20,7 +20,7 @@ func testForwarding(stageHarness *tester_utils.StageHarness) error {
 
 	logger := stageHarness.Logger
 
-	queryDomain := "codecrafters.io."
+	queryDomain := randomDomainWithType(dns.TypeA)
 
 	if err := testARecord(logger, queryDomain); err != nil {
 		return err
@@ -45,9 +45,10 @@ func testARecord(logger *logger.Logger, queryDomain string) error {
 		}
 
 		if aRecord, ok := record.(*dns.A); ok {
-			// Check if the IP address matches the expected value
 			if !aRecord.A.Equal(expectedIP) {
 				return fmt.Errorf("Expected IPv4 address to be %v, got %v", expectedIP, aRecord.A)
+			} else {
+				return nil
 			}
 		} else {
 			return fmt.Errorf("Expected answer record to be of type A (IPv4) got %T", record)
