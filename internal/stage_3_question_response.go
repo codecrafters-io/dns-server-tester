@@ -14,12 +14,12 @@ func testReceiveQuestionInResponse(stageHarness *tester_utils.StageHarness) erro
 
 	queryDomain := "codecrafters.io."
 	packetIdentifier := 1234
+	logger := stageHarness.Logger
 
-	dnsMsg, err := sendDNSQuery(uint16(packetIdentifier), queryDomain, SERVER_ADDR)
+	dnsMsg, err := sendDNSQueryWithId(logger, uint16(packetIdentifier), queryDomain)
 	if err != nil {
 		return fmt.Errorf("Error sending DNS query: %s\n", err)
 	}
-	fmt.Println(dnsMsg)
 
 	// id is 1234
 	if dnsMsg.Id != 1234 {

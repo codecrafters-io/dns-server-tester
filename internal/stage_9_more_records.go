@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tester_utils "github.com/codecrafters-io/tester-utils"
+	logger "github.com/codecrafters-io/tester-utils/logger"
 	"github.com/miekg/dns"
 )
 
@@ -15,32 +16,26 @@ func testMoreRecords(stageHarness *tester_utils.StageHarness) error {
 
 	// Generate
 	queryDomain := "codecrafters.io."
+	logger := stageHarness.Logger
 
-	if err := testAAAARecrod(stageHarness, "google.com."); err != nil {
+	if err := testAAAARecrod(logger, "google.com."); err != nil {
 		return err
 	}
-	if err := testMXRecord(stageHarness, queryDomain); err != nil {
+	if err := testMXRecord(logger, queryDomain); err != nil {
 		return err
 	}
-	if err := testNSRecord(stageHarness, queryDomain); err != nil {
+	if err := testNSRecord(logger, queryDomain); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func testAAAARecrod(stageHarness *tester_utils.StageHarness, queryDomain string) error {
-	c := new(dns.Client)
-	msg := new(dns.Msg)
-	msg.SetQuestion(dns.Fqdn(queryDomain), dns.TypeAAAA)
-	msg.RecursionDesired = true
-
-	dnsMsg, _, err := c.Exchange(msg, SERVER_ADDR)
+func testAAAARecrod(logger *logger.Logger, queryDomain string) error {
+	dnsMsg, err := sendQuery(logger, queryDomain, dns.TypeAAAA)
 	if err != nil {
-		return fmt.Errorf("DNS query failed: %s.\nIf you are seeing this after a while then it is likely that your server is not responding with appropriate id", err)
+		return err
 	}
-
-	fmt.Println(dnsMsg)
 
 	if len(dnsMsg.Answer) == 0 {
 		return fmt.Errorf("Expected some answer record to be present. Got none")
@@ -65,18 +60,11 @@ func testAAAARecrod(stageHarness *tester_utils.StageHarness, queryDomain string)
 	return nil
 }
 
-func testMXRecord(stageHarness *tester_utils.StageHarness, queryDomain string) error {
-	c := new(dns.Client)
-	msg := new(dns.Msg)
-	msg.SetQuestion(dns.Fqdn(queryDomain), dns.TypeMX)
-	msg.RecursionDesired = true
-
-	dnsMsg, _, err := c.Exchange(msg, SERVER_ADDR)
+func testMXRecord(logger *logger.Logger, queryDomain string) error {
+	dnsMsg, err := sendQuery(logger, queryDomain, dns.TypeMX)
 	if err != nil {
-		return fmt.Errorf("DNS query failed: %s.\nIf you are seeing this after a while then it is likely that your server is not responding with appropriate id", err)
+		return err
 	}
-
-	fmt.Println(dnsMsg)
 
 	if len(dnsMsg.Answer) == 0 {
 		return fmt.Errorf("Expected some answer record to be present. Got none")
@@ -101,18 +89,11 @@ func testMXRecord(stageHarness *tester_utils.StageHarness, queryDomain string) e
 	return nil
 }
 
-func testNSRecord(stageHarness *tester_utils.StageHarness, queryDomain string) error {
-	c := new(dns.Client)
-	msg := new(dns.Msg)
-	msg.SetQuestion(dns.Fqdn(queryDomain), dns.TypeNS)
-	msg.RecursionDesired = true
-
-	dnsMsg, _, err := c.Exchange(msg, SERVER_ADDR)
+func testNSRecord(logger *logger.Logger, queryDomain string) error {
+	dnsMsg, err := sendQuery(logger, queryDomain, dns.TypeNS)
 	if err != nil {
-		return fmt.Errorf("DNS query failed: %s.\nIf you are seeing this after a while then it is likely that your server is not responding with appropriate id", err)
+		return err
 	}
-
-	fmt.Println(dnsMsg)
 
 	if len(dnsMsg.Answer) == 0 {
 		return fmt.Errorf("Expected some answer record to be present. Got none")

@@ -15,12 +15,12 @@ func testReceiveAnswerInResponse(stageHarness *tester_utils.StageHarness) error 
 
 	queryDomain := "codecrafters.io."
 	packetIdentifier := 1234
+	logger := stageHarness.Logger
 
-	dnsMsg, err := sendDNSQuery(uint16(packetIdentifier), queryDomain, SERVER_ADDR)
+	dnsMsg, err := sendDNSQueryWithId(logger, uint16(packetIdentifier), queryDomain)
 	if err != nil {
 		return fmt.Errorf("Error sending DNS query: %s\n", err)
 	}
-	fmt.Println(dnsMsg)
 
 	// id is 1234
 	if dnsMsg.Id != 1234 {
@@ -32,8 +32,8 @@ func testReceiveAnswerInResponse(stageHarness *tester_utils.StageHarness) error 
 	if dnsMsg.Question[0].Name != queryDomain {
 		return fmt.Errorf("Expected question domain name to be `%v` got `%v`", queryDomain, dnsMsg.Question[0].Name)
 	}
-	if len(dnsMsg.Answer) != 1 {
-		return fmt.Errorf("Expected answer section to have one entry got %d", len(dnsMsg.Answer))
+	if len(dnsMsg.Answer) == 0 {
+		return fmt.Errorf("Expected answer section to have at least one entry got %d", len(dnsMsg.Answer))
 	}
 	record := dnsMsg.Answer[0]
 

@@ -10,7 +10,7 @@ var testerDefinition = testerutils.TesterDefinition{
 	TestCases: []testerutils.TestCase{
 		{
 			Slug:     "init",
-			TestFunc: testInit,
+			TestFunc: testInitEmpty,
 		},
 		{
 			Slug:     "write-headers",
