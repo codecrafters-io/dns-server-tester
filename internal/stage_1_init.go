@@ -6,6 +6,7 @@ import (
 	"time"
 
 	tester_utils "github.com/codecrafters-io/tester-utils"
+	logger "github.com/codecrafters-io/tester-utils/logger"
 	"github.com/miekg/dns"
 )
 
@@ -15,21 +16,30 @@ const (
 
 // Example from the grep course
 func testInit(stageHarness *tester_utils.StageHarness) error {
-	var err error
 
 	b := NewDnsServerBinary(stageHarness)
-	if err = b.Run(); err != nil {
+	if err := b.Run(); err != nil {
 		return err
 	}
 
 	logger := stageHarness.Logger
 
-	retries := 0
+	err := retryDialUntilSuccess(logger)
+	if err != nil {
+		logger.Infof("All retries failed.")
+		return err
+	}
 
+	logger.Infof("Success.")
+	return nil
+}
+
+func retryDialUntilSuccess(logger *logger.Logger) error {
+	var err error
+	retries := 0
 	logger.Infof("Connecting to %s using UDP", SERVER_ADDR)
 	for retries < 5 {
-		// Don't print errors in the first second
-		if retries > 2 {
+		if retries > 1 {
 			logger.Infof("Failed to connect to port 2053, retrying in 1s")
 		}
 
@@ -48,7 +58,7 @@ func testInit(stageHarness *tester_utils.StageHarness) error {
 			continue
 		}
 
-		// conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(1 * time.Second))
 		buffer := make([]byte, 1024)
 		_, err = conn.Read(buffer)
 
@@ -58,19 +68,18 @@ func testInit(stageHarness *tester_utils.StageHarness) error {
 				logger.Debugf("No ICMP response, port is likely open.")
 				break
 			}
-			continue
+		} else {
+			logger.Debugf("Got a response")
+			break
 		}
 
 		retries += 1
 		time.Sleep(1 * time.Second)
 	}
-
 	if err != nil {
-		logger.Infof("All retries failed.")
 		return err
 	}
 
-	logger.Infof("Success.")
 	return nil
 }
 

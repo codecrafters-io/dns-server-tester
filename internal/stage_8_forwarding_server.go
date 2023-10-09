@@ -14,8 +14,11 @@ func testForwarding(stageHarness *tester_utils.StageHarness) error {
 	if err := b.Run(); err != nil {
 		return err
 	}
+	logger := stageHarness.Logger
+	if err := retryDialUntilSuccess(logger); err != nil {
+		return err
+	}
 
-	// Generate
 	queryDomain := "codecrafters.io."
 
 	if err := testARecord(stageHarness.Logger, queryDomain, net.IPv4(76, 76, 21, 21)); err != nil {

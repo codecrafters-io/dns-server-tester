@@ -7,14 +7,17 @@ import (
 )
 
 func testReceiveQuestionInResponse(stageHarness *tester_utils.StageHarness) error {
-	// b := NewDnsServerBinary(stageHarness)
-	// if err := b.Run(); err != nil {
-	// 	return err
-	// }
+	b := NewDnsServerBinary(stageHarness)
+	if err := b.Run(); err != nil {
+		return err
+	}
+	logger := stageHarness.Logger
+	if err := retryDialUntilSuccess(logger); err != nil {
+		return err
+	}
 
 	queryDomain := "codecrafters.io."
 	packetIdentifier := 1234
-	logger := stageHarness.Logger
 
 	dnsMsg, err := sendDNSQueryWithId(logger, uint16(packetIdentifier), queryDomain)
 	if err != nil {

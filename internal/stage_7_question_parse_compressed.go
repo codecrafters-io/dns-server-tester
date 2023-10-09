@@ -13,15 +13,18 @@ func testCompressedQuestionParsing(stageHarness *tester_utils.StageHarness) erro
 	if err := b.Run(); err != nil {
 		return err
 	}
-
 	logger := stageHarness.Logger
+	if err := retryDialUntilSuccess(logger); err != nil {
+		return err
+	}
 
-	// Generate
 	queryDomain1 := "abc.codecrafters.io."
 	queryDomain2 := "def.codecrafters.io."
 	packetIdentifier := uint16(rand.Uint32())
 
 	c := new(dns.Client)
+	retryDialUntilSuccess(logger)
+
 	msg := new(dns.Msg)
 	msg.SetQuestion(dns.Fqdn(queryDomain1), dns.TypeA)
 	msg.Question = append(msg.Question, dns.Question{Name: dns.Fqdn(queryDomain2), Qtype: dns.TypeA, Qclass: dns.ClassINET})

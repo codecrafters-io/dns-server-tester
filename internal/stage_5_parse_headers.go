@@ -13,10 +13,14 @@ func testHeaderParsing(stageHarness *tester_utils.StageHarness) error {
 	if err := b.Run(); err != nil {
 		return err
 	}
+	logger := stageHarness.Logger
+	if err := retryDialUntilSuccess(logger); err != nil {
+		return err
+	}
 
 	queryDomain := "codecrafters.io."
 
-	if _, err := sendQuery(stageHarness.Logger, queryDomain, dns.TypeA); err != nil {
+	if _, err := sendQuery(logger, queryDomain, dns.TypeA); err != nil {
 		return err
 	}
 

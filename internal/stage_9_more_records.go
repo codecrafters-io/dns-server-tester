@@ -9,14 +9,16 @@ import (
 )
 
 func testMoreRecords(stageHarness *tester_utils.StageHarness) error {
-	// b := NewDnsServerBinary(stageHarness)
-	// if err := b.Run(); err != nil {
-	// 	return err
-	// }
-
-	// Generate
-	queryDomain := "codecrafters.io."
+	b := NewDnsServerBinary(stageHarness)
+	if err := b.Run(); err != nil {
+		return err
+	}
 	logger := stageHarness.Logger
+	if err := retryDialUntilSuccess(logger); err != nil {
+		return err
+	}
+
+	queryDomain := "codecrafters.io."
 
 	if err := testAAAARecrod(logger, "google.com."); err != nil {
 		return err
