@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"regexp"
 	"testing"
 
 	tester_utils_testing "github.com/codecrafters-io/tester-utils/testing"
@@ -21,5 +22,6 @@ func TestStages(t *testing.T) {
 }
 
 func normalizeTesterOutput(testerOutput []byte) []byte {
-	return testerOutput
+	re, _ := regexp.Compile(`127.0.0.1:\d+`)
+	return re.ReplaceAll(testerOutput, []byte("127.0.0.1:xxxx"))
 }

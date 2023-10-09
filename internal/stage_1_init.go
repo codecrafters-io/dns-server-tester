@@ -35,7 +35,7 @@ func testInit(stageHarness *tester_utils.StageHarness) error {
 }
 
 func retryDialUntilSuccess(logger *logger.Logger) error {
-	var err error
+	var e error
 	retries := 0
 	logger.Infof("Connecting to %s using UDP", SERVER_ADDR)
 	for retries < 5 {
@@ -45,16 +45,19 @@ func retryDialUntilSuccess(logger *logger.Logger) error {
 
 		conn, err := net.Dial("udp", SERVER_ADDR)
 		if err != nil {
+			e = err
 			continue
 		}
 		defer conn.Close()
 
 		msg, err := getDnsMsgBytes()
 		if err != nil {
+			e = err
 			continue
 		}
 		_, err = conn.Write(msg)
 		if err != nil {
+			e = err
 			continue
 		}
 
@@ -63,6 +66,7 @@ func retryDialUntilSuccess(logger *logger.Logger) error {
 		_, err = conn.Read(buffer)
 
 		if err != nil {
+			e = err
 			netErr, ok := err.(net.Error)
 			if ok && netErr.Timeout() {
 				logger.Debugf("No ICMP response, port is likely open.")
@@ -76,8 +80,8 @@ func retryDialUntilSuccess(logger *logger.Logger) error {
 		retries += 1
 		time.Sleep(1 * time.Second)
 	}
-	if err != nil {
-		return err
+	if e != nil {
+		return e
 	}
 
 	return nil
