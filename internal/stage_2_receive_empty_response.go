@@ -14,8 +14,11 @@ func testReceiveEmptyResponse(stageHarness *tester_utils.StageHarness) error {
 	if err := b.Run(); err != nil {
 		return err
 	}
-
 	logger := stageHarness.Logger
+	if err := retryDialUntilSuccess(logger); err != nil {
+		return err
+	}
+
 	queryDomain := "codecrafters.io."
 	packetIdentifier := 1234
 

@@ -10,7 +10,7 @@ var testerDefinition = testerutils.TesterDefinition{
 	TestCases: []testerutils.TestCase{
 		{
 			Slug:     "init",
-			TestFunc: testInitEmpty,
+			TestFunc: testInit,
 		},
 		{
 			Slug:     "write-headers",
@@ -37,11 +37,15 @@ var testerDefinition = testerutils.TesterDefinition{
 			TestFunc: testCompressedQuestionParsing,
 		},
 		{
-			Slug:     "forwarding",
+			Slug:     "forwarding-server",
 			TestFunc: testForwarding,
 		},
 		{
-			Slug:     "more-records",
+			Slug:     "more-record-types",
+			TestFunc: testMoreRecords,
+		},
+		{
+			Slug:     "dns-resolution",
 			TestFunc: testMoreRecords,
 		},
 	},
