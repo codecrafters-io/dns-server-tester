@@ -8,16 +8,17 @@ import (
 )
 
 func testBasicQuestionParsing(stageHarness *tester_utils.StageHarness) error {
-	b := NewDnsServerBinary(stageHarness)
-	if err := b.Run(); err != nil {
-		return err
+	cancels, err := startDNSServers(stageHarness)
+	for _, cancel := range cancels {
+		defer cancel()
 	}
-	logger := stageHarness.Logger
-	if err := retryDialUntilSuccess(logger); err != nil {
+	if err != nil {
 		return err
 	}
 
-	queryDomain := "mail.google.com."
+	logger := stageHarness.Logger
+
+	queryDomain := randomDomainWithType(dns.TypeA)
 	response, err := sendQuery(logger, queryDomain, dns.TypeA)
 	if err != nil {
 		return err

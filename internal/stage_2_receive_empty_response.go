@@ -10,19 +10,16 @@ import (
 )
 
 func testReceiveEmptyResponse(stageHarness *tester_utils.StageHarness) error {
-	b := NewDnsServerBinary(stageHarness)
-	if err := b.Run(); err != nil {
+	cancels, err := startDNSServers(stageHarness)
+	for _, cancel := range cancels {
+		defer cancel()
+	}
+	if err != nil {
 		return err
 	}
 	logger := stageHarness.Logger
-	if err := retryDialUntilSuccess(logger); err != nil {
-		return err
-	}
 
-	queryDomain := "codecrafters.io."
-	packetIdentifier := 1234
-
-	_, err := sendDNSQueryWithId(logger, uint16(packetIdentifier), queryDomain)
+	_, err = sendDNSQueryWithId(logger, uint16(DEFAULT_PKT_ID), DEFAULT_DOMAIN)
 	if err != nil {
 		return fmt.Errorf("Error sending DNS query: %s\n", err)
 	}
@@ -33,26 +30,26 @@ func testReceiveEmptyResponse(stageHarness *tester_utils.StageHarness) error {
 func sendDNSQueryWithId(logger *logger.Logger, id uint16, queryDomain string) (*dns.Msg, error) {
 	c := new(dns.Client)
 
-	msg := new(dns.Msg)
-	msg.SetQuestion(dns.Fqdn(queryDomain), dns.TypeA)
-	msg.Id = id
+	request := new(dns.Msg)
+	request.SetQuestion(dns.Fqdn(queryDomain), dns.TypeA)
+	request.Id = id
 	logger.Infof("Querying `A` record for %s", queryDomain)
 	logger.Debugf("Sending Request: (Messages with >>> prefix are part of this log)")
-	logDnsMsg(logger, msg)
+	logDNSPacket(logger, request)
 
-	response, _, err := c.Exchange(msg, SERVER_ADDR)
+	response, _, err := c.Exchange(request, SERVER_ADDR)
 	if err != nil {
 		return nil, fmt.Errorf("DNS query failed: %s.\nIf you are seeing this after a while then it is likely that your server is not responding with appropriate id", err)
 	}
 
 	logger.Debugf("Received Response: (Messages with >>> prefix are part of this log)")
-	logDnsMsg(logger, response)
+	logDNSPacket(logger, response)
 
 	return response, nil
 }
 
-func logDnsMsg(logger *logger.Logger, msg *dns.Msg) {
-	for _, line := range strings.Split(msg.String(), "\n") {
+func logDNSPacket(logger *logger.Logger, packet *dns.Msg) {
+	for _, line := range strings.Split(packet.String(), "\n") {
 		logger.Debugf(">>> %s", line)
 	}
 }

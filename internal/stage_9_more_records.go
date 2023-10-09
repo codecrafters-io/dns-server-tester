@@ -9,14 +9,15 @@ import (
 )
 
 func testMoreRecords(stageHarness *tester_utils.StageHarness) error {
-	b := NewDnsServerBinary(stageHarness)
-	if err := b.Run(); err != nil {
+	cancels, err := startDNSServers(stageHarness)
+	for _, cancel := range cancels {
+		defer cancel()
+	}
+	if err != nil {
 		return err
 	}
+
 	logger := stageHarness.Logger
-	if err := retryDialUntilSuccess(logger); err != nil {
-		return err
-	}
 
 	queryDomain := "codecrafters.io."
 
@@ -34,16 +35,16 @@ func testMoreRecords(stageHarness *tester_utils.StageHarness) error {
 }
 
 func testAAAARecrod(logger *logger.Logger, queryDomain string) error {
-	dnsMsg, err := sendQuery(logger, queryDomain, dns.TypeAAAA)
+	response, err := sendQuery(logger, queryDomain, dns.TypeAAAA)
 	if err != nil {
 		return err
 	}
 
-	if len(dnsMsg.Answer) == 0 {
+	if len(response.Answer) == 0 {
 		return fmt.Errorf("Expected some answer record to be present. Got none")
 	}
 
-	for _, record := range dnsMsg.Answer {
+	for _, record := range response.Answer {
 
 		if record.Header().Name != queryDomain {
 			return fmt.Errorf("Expected answer domain name to be `%v` got `%v`", queryDomain, record.Header().Name)
@@ -63,16 +64,16 @@ func testAAAARecrod(logger *logger.Logger, queryDomain string) error {
 }
 
 func testMXRecord(logger *logger.Logger, queryDomain string) error {
-	dnsMsg, err := sendQuery(logger, queryDomain, dns.TypeMX)
+	response, err := sendQuery(logger, queryDomain, dns.TypeMX)
 	if err != nil {
 		return err
 	}
 
-	if len(dnsMsg.Answer) == 0 {
+	if len(response.Answer) == 0 {
 		return fmt.Errorf("Expected some answer record to be present. Got none")
 	}
 
-	for _, record := range dnsMsg.Answer {
+	for _, record := range response.Answer {
 
 		if record.Header().Name != queryDomain {
 			return fmt.Errorf("Expected answer domain name to be `%v` got `%v`", queryDomain, record.Header().Name)
@@ -92,16 +93,16 @@ func testMXRecord(logger *logger.Logger, queryDomain string) error {
 }
 
 func testNSRecord(logger *logger.Logger, queryDomain string) error {
-	dnsMsg, err := sendQuery(logger, queryDomain, dns.TypeNS)
+	response, err := sendQuery(logger, queryDomain, dns.TypeNS)
 	if err != nil {
 		return err
 	}
 
-	if len(dnsMsg.Answer) == 0 {
+	if len(response.Answer) == 0 {
 		return fmt.Errorf("Expected some answer record to be present. Got none")
 	}
 
-	for _, record := range dnsMsg.Answer {
+	for _, record := range response.Answer {
 
 		if record.Header().Name != queryDomain {
 			return fmt.Errorf("Expected answer domain name to be `%v` got `%v`", queryDomain, record.Header().Name)

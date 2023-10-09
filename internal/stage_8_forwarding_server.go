@@ -10,35 +10,33 @@ import (
 )
 
 func testForwarding(stageHarness *tester_utils.StageHarness) error {
-	b := NewDnsServerBinary(stageHarness)
-	if err := b.Run(); err != nil {
+	cancels, err := startDNSServers(stageHarness)
+	for _, cancel := range cancels {
+		defer cancel()
+	}
+	if err != nil {
 		return err
 	}
+
 	logger := stageHarness.Logger
-	if err := retryDialUntilSuccess(logger); err != nil {
-		return err
-	}
 
 	queryDomain := "codecrafters.io."
 
-	if err := testARecord(stageHarness.Logger, queryDomain, net.IPv4(76, 76, 21, 21)); err != nil {
-		return err
-	}
-
-	if err := testARecord(stageHarness.Logger, "google.com.", net.IPv4(142, 250, 183, 14)); err != nil {
+	if err := testARecord(logger, queryDomain); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func testARecord(logger *logger.Logger, queryDomain string, expectedIP net.IP) error {
-	dnsMsg, err := sendQuery(logger, queryDomain, dns.TypeA)
+func testARecord(logger *logger.Logger, queryDomain string) error {
+	response, err := sendQuery(logger, queryDomain, dns.TypeA)
 	if err != nil {
 		return err
 	}
+	expectedIP := net.ParseIP(dnsRecords[queryDomain][dns.TypeA])
 
-	for _, record := range dnsMsg.Answer {
+	for _, record := range response.Answer {
 		if record.Header().Name != queryDomain {
 			return fmt.Errorf("Expected answer domain name to be `%v` got `%v`", queryDomain, record.Header().Name)
 		}
@@ -46,9 +44,11 @@ func testARecord(logger *logger.Logger, queryDomain string, expectedIP net.IP) e
 			return fmt.Errorf("Expected answer type to be 1 got %d", record.Header().Rrtype)
 		}
 
-		if _, ok := record.(*dns.A); ok {
-			// TODO: Actually test this once we have our home grown DNS server which the program under test will call
-			return nil
+		if aRecord, ok := record.(*dns.A); ok {
+			// Check if the IP address matches the expected value
+			if !aRecord.A.Equal(expectedIP) {
+				return fmt.Errorf("Expected IPv4 address to be %v, got %v", expectedIP, aRecord.A)
+			}
 		} else {
 			return fmt.Errorf("Expected answer record to be of type A (IPv4) got %T", record)
 		}

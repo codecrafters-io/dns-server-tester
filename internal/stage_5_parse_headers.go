@@ -9,18 +9,17 @@ import (
 )
 
 func testHeaderParsing(stageHarness *tester_utils.StageHarness) error {
-	b := NewDnsServerBinary(stageHarness)
-	if err := b.Run(); err != nil {
+	cancels, err := startDNSServers(stageHarness)
+	for _, cancel := range cancels {
+		defer cancel()
+	}
+	if err != nil {
 		return err
 	}
+
 	logger := stageHarness.Logger
-	if err := retryDialUntilSuccess(logger); err != nil {
-		return err
-	}
 
-	queryDomain := "codecrafters.io."
-
-	if _, err := sendQuery(logger, queryDomain, dns.TypeA); err != nil {
+	if _, err := sendQuery(logger, DEFAULT_DOMAIN, dns.TypeA); err != nil {
 		return err
 	}
 
@@ -30,19 +29,19 @@ func testHeaderParsing(stageHarness *tester_utils.StageHarness) error {
 func sendQuery(logger *logger.Logger, queryDomain string, recordType uint16) (*dns.Msg, error) {
 	c := new(dns.Client)
 
-	msg := new(dns.Msg)
-	msg.SetQuestion(dns.Fqdn(queryDomain), recordType)
+	request := new(dns.Msg)
+	request.SetQuestion(dns.Fqdn(queryDomain), recordType)
 	logger.Infof("Querying `%s` record for %s", recordTypeToString(recordType), queryDomain)
 	logger.Debugf("Sending Request: (Messages with >>> prefix are part of this log)")
-	logDnsMsg(logger, msg)
+	logDNSPacket(logger, request)
 
-	response, _, err := c.Exchange(msg, SERVER_ADDR)
+	response, _, err := c.Exchange(request, SERVER_ADDR)
 	if err != nil {
 		return nil, fmt.Errorf("DNS query failed: %s.\nIf you are seeing this after a while then it is likely that your server is not responding with appropriate id", err)
 	}
 
 	logger.Debugf("Received Response: (Messages with >>> prefix are part of this log)")
-	logDnsMsg(logger, response)
+	logDNSPacket(logger, response)
 
 	return response, nil
 }
