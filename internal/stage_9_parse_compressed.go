@@ -7,7 +7,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-func testBasicQuestionParsing(stageHarness *tester_utils.StageHarness) error {
+func testCompressedPacketParsing(stageHarness *tester_utils.StageHarness) error {
 	cancels, err := startDNSServers(stageHarness)
 	for _, cancel := range cancels {
 		defer cancel()
@@ -18,7 +18,7 @@ func testBasicQuestionParsing(stageHarness *tester_utils.StageHarness) error {
 
 	logger := stageHarness.Logger
 
-	queryDomain := randomDomainWithType(dns.TypeA)
+	queryDomain := randomLongAssDomainName()
 	response, err := sendQuery(logger, queryDomain, dns.TypeA)
 	if err != nil {
 		return err

@@ -7,32 +7,29 @@ import (
 )
 
 func testReceiveQuestionInResponse(stageHarness *tester_utils.StageHarness) error {
-	b := NewDnsServerBinary(stageHarness)
-	if err := b.Run(); err != nil {
+	cancels, err := startDNSServers(stageHarness)
+	for _, cancel := range cancels {
+		defer cancel()
+	}
+	if err != nil {
 		return err
 	}
+
 	logger := stageHarness.Logger
-	if err := retryDialUntilSuccess(logger); err != nil {
-		return err
-	}
 
-	queryDomain := "codecrafters.io."
-	packetIdentifier := 1234
-
-	dnsMsg, err := sendDNSQueryWithId(logger, uint16(packetIdentifier), queryDomain)
+	response, err := sendDNSQueryWithId(logger, uint16(DEFAULT_PKT_ID), DEFAULT_DOMAIN)
 	if err != nil {
 		return fmt.Errorf("Error sending DNS query: %s\n", err)
 	}
 
-	// id is 1234
-	if dnsMsg.Id != 1234 {
-		return fmt.Errorf("Expected ID to be 1234, got %d", dnsMsg.Id)
+	if response.Id != DEFAULT_PKT_ID {
+		return fmt.Errorf("Expected ID to be 1234, got %d", response.Id)
 	}
-	if len(dnsMsg.Question) != 1 {
-		return fmt.Errorf("Expected question section to have one entry got %d", len(dnsMsg.Question))
+	if len(response.Question) == 0 {
+		return fmt.Errorf("Expected question section to have one entry got %d", len(response.Question))
 	}
-	if dnsMsg.Question[0].Name != queryDomain {
-		return fmt.Errorf("Expected question domain name to be `%v` got `%v`", queryDomain, dnsMsg.Question[0].Name)
+	if response.Question[0].Name != DEFAULT_DOMAIN {
+		return fmt.Errorf("Expected question domain name to be `%v` got `%v`", DEFAULT_DOMAIN, response.Question[0].Name)
 	}
 
 	return nil
