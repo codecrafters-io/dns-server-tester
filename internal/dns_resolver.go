@@ -64,7 +64,7 @@ func startDNSServer(ctx context.Context, logger *logger.Logger, addr string) {
 	}
 	dns.HandleFunc(".", handleDNSRequest)
 
-	logger.Infof("DNS resolver listening on %s", addr)
+	logger.Debugf("DNS resolver listening on %s", addr)
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -77,7 +77,7 @@ func startDNSServer(ctx context.Context, logger *logger.Logger, addr string) {
 
 	select {
 	case <-ctx.Done():
-		logger.Infof("Shutting down DNS server...")
+		logger.Debugf("Shutting down DNS resolver server...")
 		server.Shutdown()
 	}
 }

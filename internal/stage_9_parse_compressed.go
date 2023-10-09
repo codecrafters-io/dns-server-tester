@@ -7,7 +7,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-func testCompressedQuestionParsing(stageHarness *tester_utils.StageHarness) error {
+func testCompressedPacketParsing(stageHarness *tester_utils.StageHarness) error {
 	cancels, err := startDNSServers(stageHarness)
 	for _, cancel := range cancels {
 		defer cancel()

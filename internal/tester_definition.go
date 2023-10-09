@@ -41,8 +41,8 @@ var testerDefinition = testerutils.TesterDefinition{
 			TestFunc: testMoreRecords,
 		},
 		{
-			Slug:     "parse-question-compressed",
-			TestFunc: testCompressedQuestionParsing,
+			Slug:     "parse-compressed-packet",
+			TestFunc: testCompressedPacketParsing,
 		},
 		{
 			Slug:     "dns-resolution",
