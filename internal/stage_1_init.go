@@ -44,65 +44,70 @@ func startDNSServers(stageHarness *tester_utils.StageHarness) ([]context.CancelF
 		return cancels, err
 	}
 
-	if err := retryDialUntilSuccess(logger); err != nil {
+	if err := retryUDPCommunicationUntilSuccess(logger, b); err != nil {
 		return cancels, err
 	}
 	return cancels, nil
 }
 
-func retryDialUntilSuccess(logger *logger.Logger) error {
+func retryUDPCommunicationUntilSuccess(logger *logger.Logger, b *DnsServerBinary) error {
 	var e error
 	retries := 0
 	logger.Infof("Connecting to %s using UDP", SERVER_ADDR)
 	for retries < 5 {
-		if retries > 1 {
-			logger.Infof("Failed to connect to port 2053, retrying in 1s")
-		}
-
-		conn, err := net.Dial("udp", SERVER_ADDR)
-		if err != nil {
-			e = err
-			continue
-		}
-		defer conn.Close()
-
-		request, err := getDnsMsgBytes()
-		if err != nil {
-			e = err
-			continue
-		}
-		_, err = conn.Write(request)
-		if err != nil {
-			e = err
-			continue
-		}
-
-		conn.SetReadDeadline(time.Now().Add(10 * time.Second))
-		responseBuffer := make([]byte, 1024)
-		_, err = conn.Read(responseBuffer)
-
-		if err != nil {
-			e = err
-			netErr, ok := err.(net.Error)
-			if ok && netErr.Timeout() {
-				e = nil
-				logger.Debugf("No ICMP response, port is likely open.")
-				break
+		if retries > 2 {
+			if b.HasExited() {
+				return fmt.Errorf("Looks like your program has terminated. A DNS server is expected to be a long-running process.")
 			}
-		} else {
-			e = nil
-			logger.Debugf("Got a response")
-			break
+			logger.Infof("Did not receive response from DNS server, retrying")
+			logger.Errorf("%s", e)
+
 		}
 
+		err := doUDPCommunication()
+		if err == nil {
+			return nil
+		}
+		e = err
 		retries += 1
 		time.Sleep(1 * time.Second)
 	}
-	if e != nil {
-		return e
-	}
 
+	return e
+}
+
+func doUDPCommunication() error {
+	conn, err := net.Dial("udp", SERVER_ADDR)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	err = sendDnsPacket(conn)
+	if err != nil {
+		return err
+	}
+	err = readAnyResponse(conn)
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func sendDnsPacket(conn net.Conn) error {
+	request, err := getDnsMsgBytes()
+	if err != nil {
+		return err
+	}
+	_, err = conn.Write(request)
+	return err
+}
+
+func readAnyResponse(conn net.Conn) error {
+	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+	responseBuffer := make([]byte, 1024)
+	_, err := conn.Read(responseBuffer)
+	return err
 }
 
 func getDnsMsgBytes() ([]byte, error) {
