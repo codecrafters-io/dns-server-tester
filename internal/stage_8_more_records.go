@@ -37,7 +37,9 @@ func testMoreRecords(stageHarness *tester_utils.StageHarness) error {
 }
 
 func testAAAARecrod(logger *logger.Logger, queryDomain string) error {
-	response, err := sendQuery(logger, queryDomain, dns.TypeAAAA)
+	request := new(dns.Msg)
+	request.SetQuestion(dns.Fqdn(queryDomain), dns.TypeAAAA)
+	response, err := sendQuery(logger, request)
 	if err != nil {
 		return err
 	}
@@ -71,7 +73,9 @@ func testAAAARecrod(logger *logger.Logger, queryDomain string) error {
 }
 
 func testMXRecord(logger *logger.Logger, queryDomain string) error {
-	response, err := sendQuery(logger, queryDomain, dns.TypeMX)
+	request := new(dns.Msg)
+	request.SetQuestion(dns.Fqdn(queryDomain), dns.TypeMX)
+	response, err := sendQuery(logger, request)
 	if err != nil {
 		return err
 	}
@@ -100,7 +104,9 @@ func testMXRecord(logger *logger.Logger, queryDomain string) error {
 }
 
 func testNSRecord(logger *logger.Logger, queryDomain string) error {
-	response, err := sendQuery(logger, queryDomain, dns.TypeNS)
+	request := new(dns.Msg)
+	request.SetQuestion(dns.Fqdn(queryDomain), dns.TypeNS)
+	response, err := sendQuery(logger, request)
 	if err != nil {
 		return err
 	}

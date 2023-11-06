@@ -19,14 +19,11 @@ func testReceiveQuestionInResponse(stageHarness *tester_utils.StageHarness) erro
 
 	response, err := sendDNSQueryWithId(logger, uint16(DEFAULT_PKT_ID), DEFAULT_DOMAIN)
 	if err != nil {
-		return fmt.Errorf("Error sending DNS query: %s\n", err)
+		return fmt.Errorf("%s", err)
 	}
 
-	if response.Id != DEFAULT_PKT_ID {
-		return fmt.Errorf("Expected ID to be 1234, got %d", response.Id)
-	}
-	if len(response.Question) == 0 {
-		return fmt.Errorf("Expected question section to have one entry got %d", len(response.Question))
+	if len(response.Question) != 1 {
+		return friendlyQuestionErr(response)
 	}
 	if response.Question[0].Name != DEFAULT_DOMAIN {
 		return fmt.Errorf("Expected question domain name to be `%v` got `%v`", DEFAULT_DOMAIN, response.Question[0].Name)

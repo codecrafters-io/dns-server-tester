@@ -18,8 +18,10 @@ func testBasicQuestionParsing(stageHarness *tester_utils.StageHarness) error {
 
 	logger := stageHarness.Logger
 
+	request := new(dns.Msg)
 	queryDomain := randomDomainWithType(dns.TypeA)
-	response, err := sendQuery(logger, queryDomain, dns.TypeA)
+	request.SetQuestion(dns.Fqdn(queryDomain), dns.TypeA)
+	response, err := sendQuery(logger, request)
 	if err != nil {
 		return err
 	}

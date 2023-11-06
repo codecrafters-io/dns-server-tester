@@ -19,7 +19,10 @@ func testCompressedPacketParsing(stageHarness *tester_utils.StageHarness) error 
 	logger := stageHarness.Logger
 
 	queryDomain := randomLongAssDomainName()
-	response, err := sendQuery(logger, queryDomain, dns.TypeA)
+
+	request := new(dns.Msg)
+	request.SetQuestion(dns.Fqdn(queryDomain), dns.TypeA)
+	response, err := sendQuery(logger, request)
 	if err != nil {
 		return err
 	}
