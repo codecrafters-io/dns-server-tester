@@ -1,5 +1,5 @@
-[33m[stage-1] [0m[94m[94mRunning tests for Stage #1: init[0m[0m
-[33m[stage-1] [0m[94m[94mStarting DNS server on 127.0.0.1:2053[0m[0m
-[33m[stage-1] [0m[94m[94mConnecting to 127.0.0.1:2053 using UDP[0m[0m
-[33m[stage-1] [0m[91m[91mLooks like your program has terminated. A DNS server is expected to be a long-running process.[0m[0m
-[33m[stage-1] [0m[91m[91mTest failed (try setting 'debug: true' in your codecrafters.yml to see more details)[0m[0m
+[33m[stage-1] [0m[94mRunning tests for Stage #1: init[0m
+[33m[stage-1] [0m[94mStarting DNS server on 127.0.0.1:2053[0m
+[33m[stage-1] [0m[94mConnecting to 127.0.0.1:2053 using UDP[0m
+[33m[stage-1] [0m[91mLooks like your program has terminated. A DNS server is expected to be a long-running process.[0m
+[33m[stage-1] [0m[91mTest failed (try setting 'debug: true' in your codecrafters.yml to see more details)[0m
