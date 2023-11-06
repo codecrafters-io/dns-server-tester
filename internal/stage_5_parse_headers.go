@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"math/rand"
 
 	tester_utils "github.com/codecrafters-io/tester-utils"
 	logger "github.com/codecrafters-io/tester-utils/logger"
@@ -21,10 +22,24 @@ func testHeaderParsing(stageHarness *tester_utils.StageHarness) error {
 
 	request := new(dns.Msg)
 	request.SetQuestion(dns.Fqdn(DEFAULT_DOMAIN), dns.TypeA)
+	request.MsgHdr.RecursionDesired = randomBool()
+	request.MsgHdr.Opcode = rand.Intn(4)
 
-	_, err = sendQuery(logger, request)
+	response, err := sendQuery(logger, request)
 	if err != nil {
 		return err
+	}
+	if response.MsgHdr.RecursionDesired != request.MsgHdr.RecursionDesired {
+		return fmt.Errorf("Expected RecursionDesired field to be %v got %v",
+			request.MsgHdr.RecursionDesired, response.MsgHdr.RecursionDesired)
+	}
+	if response.MsgHdr.Opcode != request.MsgHdr.Opcode {
+		return fmt.Errorf("Expected Opcode field to be %v got %v", request.MsgHdr.Opcode, response.MsgHdr.Opcode)
+	}
+	if request.MsgHdr.Opcode != 0 {
+		if response.MsgHdr.Rcode != 4 {
+			return fmt.Errorf("Expected Rcode field to be 4 got %v", response.MsgHdr.Rcode)
+		}
 	}
 
 	return nil

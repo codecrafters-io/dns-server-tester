@@ -126,3 +126,7 @@ func randomLongAssDomainName() string {
 	randomInt := rand.Intn(len(domains))
 	return domains[randomInt]
 }
+
+func randomBool() bool {
+	return rand.Intn(2) == 0
+}
