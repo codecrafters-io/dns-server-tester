@@ -21,7 +21,7 @@ func testReceiveEmptyResponse(stageHarness *tester_utils.StageHarness) error {
 
 	response, err := sendDNSQueryWithId(logger, uint16(DEFAULT_PKT_ID), DEFAULT_DOMAIN)
 	if err != nil {
-		return fmt.Errorf("Error sending DNS query: %s\n", err)
+		return fmt.Errorf("%s", err)
 	}
 	if !response.MsgHdr.Response {
 		return fmt.Errorf("Expected QR field to be set to 1. 1 indicates that it is a response. Got 0")
