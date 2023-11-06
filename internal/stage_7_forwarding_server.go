@@ -30,7 +30,10 @@ func testForwarding(stageHarness *tester_utils.StageHarness) error {
 }
 
 func testARecord(logger *logger.Logger, queryDomain string) error {
-	response, err := sendQuery(logger, queryDomain, dns.TypeA)
+	request := new(dns.Msg)
+	request.SetQuestion(dns.Fqdn(queryDomain), dns.TypeA)
+
+	response, err := sendQuery(logger, request)
 	if err != nil {
 		return err
 	}
