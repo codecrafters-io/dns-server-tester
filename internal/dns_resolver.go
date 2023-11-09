@@ -10,11 +10,9 @@ import (
 
 func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 	m := new(dns.Msg)
-	fmt.Printf("Received DNS request, %v", m)
 	m.SetReply(r)
 
 	for _, question := range r.Question {
-		fmt.Println("Question:", question)
 		records, exists := dnsRecords[question.Name]
 		if !exists {
 			continue
