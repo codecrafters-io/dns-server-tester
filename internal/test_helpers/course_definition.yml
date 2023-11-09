@@ -240,33 +240,6 @@ stages:
     marketing_md: |-
       In this stage, we'll parse a DNS packet's question section
 
-  - slug: "forwarding-server"
-    name: "Forwarding Server"
-    difficulty: medium
-    description_md: |-
-      By now I assume you are itching to get to something other than dealing with the DNS packet format. In this stage, you will implement a forwarding DNS server. Your program will be responsible for forwarding DNS queries to a specified DNS server, and then returning the response to the original requester.
-
-      The tester will invoke your like - `./your_server --resolver-address <address>`. You will need to forward the query you receive to this server and return the response back to the tester.
-      In this stage the server can respond with values in "Authority Section" as well as "Additional Section". So make sure that your parsing logic can handle those.
-
-      We will only deal with `A` record types here.
-    marketing_md: |-
-      In this stage, we'll call a DNS server which will do the actual DNS resolution.
-
-  - slug: "more-record-types"
-    name: "More record types"
-    difficulty: easy
-    description_md: |-
-      In this stage, we will deal with more record types. There are a lot of record types in general, we will (obviously) not deal with all of them. But we will deal with a few important ones. If you recall the descussion in Stage 4. Each record is preceded by a premble, the structure for that remains the same and we will explore the part that differs - the `RDATA` -
-
-      - **A (Alias)**: Maps names to IPv4 addresses. `RDATA` is Four bytes for IPv4 address.
-      - **NS (Name Server)**: The DNS server address for a domain. `RDATA` is a Label Sequence
-      - **CNAME (Canonical Name)**: Maps names to names. `RDATA` is a Label Sequence
-      - **MX (Mail Exchange)**: The host of the mail server for a domain. `RDATA` has 2-bytes for priority followed by Label Sequence.
-      - **AAAA (IPv6 Alias)**: - Maps names to IPv6 addresses. `RDATA` is Sixteen bytes for IPv6 address
-    marketing_md: |-
-      In this stage, we'll deal with more record types
-
   - slug: "parse-compressed-packet"
     name: "Parse DNS packet with compressed labels"
     difficulty: medium
@@ -279,25 +252,15 @@ stages:
     marketing_md: |-
       In this stage, we'll parse a DNS packet's question in which the label sequences have been compressed
 
-  - slug: "dns-resolution"
-    name: "DNS Resolution"
-    difficulty: hard
+  - slug: "forwarding-server"
+    name: "Forwarding Server"
+    difficulty: medium
     description_md: |-
-      Finally, we will deal with recursive DNS resolution. In this stage you will remove your dependence on the google public DNS server and will do the recursive resolve yourself.
+      By now I assume you are itching to get to something other than dealing with the DNS packet format. In this stage, you will implement a forwarding DNS server. Your program will be responsible for forwarding DNS queries to a specified DNS server, and then returning the response to the original requester.
 
-      Let's first take a look at how DNS resolution happens -
-      - User Program looks up it's own cache 
-      - If it finds it there great otherwise the following steps are followed 
-      - The request then goes to the **Resolver server**. Each host has this configured (to view `scutil --dns`). If it finds it in the cache then it returns with the value.
-      - The resolver then goes to the Root server. One can simulate this by executing `dig +norecurse @198.41.0.4 www.google.com`. - You can get a list of other Root server addresses from [named.root](https://www.internic.net/domain/named.root)
-      - The Root server does not have the resolution but it will reply with the list of IP address of the Authoritative Servers for this Top Level Domain (TLD). E.g. if I am looking up goole.com then it will be forwarded to `.com` TLD 
-      - The resolver then goes to the TLD DNS server (whose ip we got in last step). One can simulate this step by executing `dig +norecurse @192.5.6.30 www.google.com`. Where `192.4.5.30` was in the response of the previous `dig` command that we executed.
-      - The TLD server returns a list of IPs for Authoritative Name servers 
-      - The resolver then goes to the Authoritative Name Server. One can simulate this step by executing `dig +norecurse @216.239.32.10 www.google.com`
-      - ANS responds with an IP from it's database. It chooses one of those IP addresses and gives it to you.
-      - **Resolver** stores this in it's cache and returns the value to the requesting host 
-      - Requesting host stores this info in it's cache
+      The tester will invoke your like - `./your_server --resolver-address <address>`. You will need to forward the query you receive to this server and return the response back to the tester.
+      In this stage the server can respond with values in "Authority Section" as well as "Additional Section". So make sure that your parsing logic can handle those.
 
-      Refer [this section](https://www.rfc-editor.org/rfc/rfc1035#section-7) of the RFC for details.
+      We will only deal with `A` record types here.
     marketing_md: |-
-      In this stage, we'll do DNS resolution
+      In this stage, we'll call a DNS server which will do the actual DNS resolution.

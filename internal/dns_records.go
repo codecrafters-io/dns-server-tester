@@ -80,20 +80,11 @@ var dnsRecords = map[string]map[uint16]string{
 		dns.TypeA:  "76.76.21.21",
 		dns.TypeMX: "10 mail.codecrafters.io.",
 	},
-}
-
-var dnsRecordsForCompression = map[string]map[uint16]string{
-	"longassdomainname.com.": {
+	"abc.longassdomainname.com.": {
 		dns.TypeA: "127.0.0.1",
 	},
-	"hey-there-i-hear-you-like-longassdomainname.com.": {
-		dns.TypeA: "172.217.3.110",
-	},
-	"this-is-a-long-domainname.io.": {
-		dns.TypeA: "31.13.65.36",
-	},
-	"abcdefghijklmnopqrstuvw.xyz": {
-		dns.TypeA: "140.82.113.3",
+	"def.longassdomainname.com.": {
+		dns.TypeA: "127.0.0.2",
 	},
 }
 
@@ -113,18 +104,8 @@ func randomDomainWithType(recordType uint16) string {
 	return domains[randomInt]
 }
 
-func longAssDomainNames() []string {
-	var result []string
-	for domain := range dnsRecordsForCompression {
-		result = append(result, domain)
-	}
-	return result
-}
-
-func randomLongAssDomainName() string {
-	domains := longAssDomainNames()
-	randomInt := rand.Intn(len(domains))
-	return domains[randomInt]
+func domainPairForCompression() (string, string) {
+	return "abc.longassdomainname.com.", "def.longassdomainname.com."
 }
 
 func randomBool() bool {
