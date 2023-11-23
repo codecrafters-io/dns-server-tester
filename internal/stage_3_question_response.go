@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tester_utils "github.com/codecrafters-io/tester-utils"
+	"github.com/miekg/dns"
 )
 
 func testReceiveQuestionInResponse(stageHarness *tester_utils.StageHarness) error {
@@ -25,8 +26,31 @@ func testReceiveQuestionInResponse(stageHarness *tester_utils.StageHarness) erro
 	if len(response.Question) != 1 {
 		return friendlyQuestionErr(response)
 	}
-	if response.Question[0].Name != DEFAULT_DOMAIN {
-		return fmt.Errorf("Expected question domain name to be `%v` got `%v`", DEFAULT_DOMAIN, response.Question[0].Name)
+
+	actualQuestion := response.Question[0]
+
+	if err := validateQuestion(DEFAULT_DOMAIN, &actualQuestion); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func validateQuestion(domain string, question *dns.Question) error {
+	if question.Name != DEFAULT_DOMAIN {
+		return fmt.Errorf("Expected question domain name to be `%v` got `%v`", domain, question.Name)
+	}
+
+	if question.Qtype != dns.TypeA {
+		more_info := ""
+		if question.Qtype == 256 {
+			more_info = "\nIt is likely you are missing a null terminator in your domain name."
+		}
+		return fmt.Errorf("Expected question type to be 1 got %d%s", question.Qtype, more_info)
+	}
+
+	if question.Qclass != dns.ClassINET {
+		return fmt.Errorf("Expected question class to be 1 got %d", question.Qclass)
 	}
 
 	return nil

@@ -23,12 +23,10 @@ func testReceiveAnswerInResponse(stageHarness *tester_utils.StageHarness) error 
 		return fmt.Errorf("%s", err)
 	}
 
-	if len(response.Question) != 1 {
-		return friendlyQuestionErr(response)
+	if err := validateQuestion(DEFAULT_DOMAIN, &response.Question[0]); err != nil {
+		return err
 	}
-	if response.Question[0].Name != DEFAULT_DOMAIN {
-		return fmt.Errorf("Expected question domain name to be `%v` got `%v`", DEFAULT_DOMAIN, response.Question[0].Name)
-	}
+
 	if len(response.Answer) == 0 {
 		return friendlyAnswerErr(response)
 	}
