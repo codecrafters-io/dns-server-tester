@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	tester_utils "github.com/codecrafters-io/tester-utils"
 	logger "github.com/codecrafters-io/tester-utils/logger"
+	"github.com/codecrafters-io/tester-utils/test_case_harness"
 	"github.com/miekg/dns"
 )
 
-func testReceiveEmptyResponse(stageHarness *tester_utils.StageHarness) error {
+func testReceiveEmptyResponse(stageHarness *test_case_harness.TestCaseHarness) error {
 	cancels, err := startDNSServers(stageHarness)
 	for _, cancel := range cancels {
 		defer cancel()

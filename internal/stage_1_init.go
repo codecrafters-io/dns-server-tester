@@ -6,8 +6,8 @@ import (
 	"net"
 	"time"
 
-	tester_utils "github.com/codecrafters-io/tester-utils"
 	logger "github.com/codecrafters-io/tester-utils/logger"
+	"github.com/codecrafters-io/tester-utils/test_case_harness"
 	"github.com/miekg/dns"
 )
 
@@ -18,7 +18,7 @@ const (
 	DEFAULT_PKT_ID = 1234
 )
 
-func testInit(stageHarness *tester_utils.StageHarness) error {
+func testInit(stageHarness *test_case_harness.TestCaseHarness) error {
 	cancels, err := startDNSServers(stageHarness)
 	for _, cancel := range cancels {
 		defer cancel()
@@ -30,7 +30,7 @@ func testInit(stageHarness *tester_utils.StageHarness) error {
 	return nil
 }
 
-func startDNSServers(stageHarness *tester_utils.StageHarness) ([]context.CancelFunc, error) {
+func startDNSServers(stageHarness *test_case_harness.TestCaseHarness) ([]context.CancelFunc, error) {
 	var cancels []context.CancelFunc
 	logger := stageHarness.Logger
 	ctx, cancel := context.WithCancel(context.Background())

@@ -1,9 +1,9 @@
 package internal
 
 import (
-	testerutils "github.com/codecrafters-io/tester-utils"
 	executable "github.com/codecrafters-io/tester-utils/executable"
 	logger "github.com/codecrafters-io/tester-utils/logger"
+	"github.com/codecrafters-io/tester-utils/test_case_harness"
 )
 
 type DnsServerBinary struct {
@@ -11,7 +11,7 @@ type DnsServerBinary struct {
 	logger     *logger.Logger
 }
 
-func NewDnsServerBinary(stageHarness *testerutils.StageHarness) *DnsServerBinary {
+func NewDnsServerBinary(stageHarness *test_case_harness.TestCaseHarness) *DnsServerBinary {
 	b := &DnsServerBinary{
 		executable: stageHarness.Executable,
 		logger:     stageHarness.Logger,
