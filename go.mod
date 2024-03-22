@@ -2,7 +2,7 @@ module github.com/codecrafters-io/grep-tester
 
 go 1.20
 
-require github.com/codecrafters-io/tester-utils v0.2.15
+require github.com/codecrafters-io/tester-utils v0.2.16
 
 require (
 	golang.org/x/mod v0.12.0 // indirect
