@@ -94,7 +94,8 @@ marketing:
         Didn't even know that was possible!
 
 stages:
-  - slug: "init" # A identifier for this stage, needs to be unique within a course.
+  - legacy_slug: "init" # A identifier for this stage, needs to be unique within a course.
+    slug: "ux2" # A identifier for this stage, needs to be unique within a course.
 
     # The name of the stage. This is shown in the course catalog, and on other course pages.
     name: "Setup UDP server"
@@ -113,154 +114,366 @@ stages:
 
     # The instructions for your stage. Markdown supported. Shown on the course page.
     description_md: |-
-      In this stage, we'll start a UDP server on port 5353.
+      In this stage, we'll setup a UDP server that can receive and respond to UDP packets on port 2053.
 
-      The [User Datagram Protocol (UDP)](https://en.wikipedia.org/wiki/User_Datagram_Protocol) is one of the core communication protocols of the Internet protocol suite used to send messages (transported as datagrams in packets) to other hosts on an [Internet Protocol (IP)](https://en.wikipedia.org/wiki/Internet_Protocol) network.
-
-      Your program will be executed like this: 
+      The tester will execute your program like this:
 
       ```bash
       $ ./your_server.sh
       ```
 
+      The tester will then send a UDP packet to port 2053.
+
+      Your program should respond back with a UDP packet. It's okay to ignore the contents of the packet for now,
+      we'll work on that in the next stage.
     # A description of this stage that is used on the course overview page and other marketing material. Markdown supported.
     marketing_md: |-
-      In this stage, we'll start a UDP server on port 5353.
+      In this stage, we'll start a UDP server on port 2053.
 
-  - slug: "write-headers"
-    name: "Write DNS header"
+  - legacy_slug: "write-headers"
+    slug: "tz1"
+    name: "Write header section"
     difficulty: medium
     description_md: |-
-      DNS packets are sent using UDP transport and are limited to 512 bytes (not always true with EDNS). DNS shares the same format for requests and responses. Here are the sections in a DNS packet.
+      All communications in the DNS protocol are carried in a single format called a "message". Each message consists of
+      5 sections: header, question, answer, authority, and an additional space.
 
-      - **Header**: Fixed size of 12 bytes; contains metadata such as ID, flags, counts, and other control information.
-      - **Question**: Variable size; represents a list of questions holding information about the query, including the domain name and query type.
-      - **Answer**: Variable size; comprises a list of records carrying the response to the query, including resource records (RRs) with data.
-      - **Authority**: Variable size; consists of a list of records indicating the authoritative DNS servers for the queried domain.
-      - **Additional**: Variable size; contains a list of records with additional information that might be useful, such as IP addresses for authoritative servers.
+      In this stage, we'll focus on the "header" section. We'll look at the other sections in later stages.
 
-      Note: The size of variable-size sections can vary depending on the number and types of records they contain, but they are limited to the overall DNS packet size of 512 bytes for UDP transport.
+      ### Header section structure
 
+      The header section of a DNS message contains the following fields: (we've also included the values that the tester expects in this stage)
 
-      In this stage you will respond with a dummy DNS packet which only contains the header information. We will get to other sections in the later stages.
+      | Field                             | Size    | Description                                                                                                            |
+      | ----------------------------------| ------- | ---------------------------------------------------------------------------------------------------------------------- |
+      | Packet Identifier (ID)            | 16 bits | A random ID assigned to query packets. Response packets must reply with the same ID. <br />**Expected value**: 1234.   |
+      | Query/Response Indicator (QR)     | 1 bit   | 1 for a reply packet, 0 for a question packet. <br />**Expected value**: 1.                                            |
+      | Operation Code (OPCODE)           | 4 bits  | Specifies the kind of query in a message. <br />**Expected value**: 0.                                                 |
+      | Authoritative Answer (AA)         | 1 bit   | 1 if the responding server "owns" the domain queried, i.e., it's authoritative. <br />**Expected value**: 0.           |
+      | Truncation (TC)                   | 1 bit   | 1 if the message is larger than 512 bytes. Always 0 in UDP responses. <br />**Expected value**: 0.                     |
+      | Recursion Desired (RD)            | 1 bit   | Sender sets this to 1 if the server should recursively resolve this query, 0 otherwise. <br />**Expected value**: 0.   |
+      | Recursion Available (RA)          | 1 bit   | Server sets this to 1 to indicate that recursion is available. <br />**Expected value**: 0.                            |
+      | Reserved (Z)                      | 3 bits  | Used by DNSSEC queries. At inception, it was reserved for future use. <br />**Expected value**: 0.                     |
+      | Response Code (RCODE)             | 4 bits  | Response code indicating the status of the response. <br />**Expected value**: 0 (no error).                           |
+      | Question Count (QDCOUNT)          | 16 bits | Number of questions in the Question section. <br />**Expected value**: 0.                                              |
+      | Answer Record Count (ANCOUNT)     | 16 bits | Number of records in the Answer section. <br />**Expected value**: 0.                                                  |
+      | Authority Record Count (NSCOUNT)  | 16 bits | Number of records in the Authority section. <br />**Expected value**: 0.                                               |
+      | Additional Record Count (ARCOUNT) | 16 bits | Number of records in the Additional section. <br />**Expected value**: 0.                                              |
 
-      Your program will need to:
-      - Accept a UDP packet that you receive. For now you can just ignore what you received. We will get to parsing in later stages.
-      - Respond with a packet which only contains the header information.
+      The header section is always 12 bytes long. Integers are encoded in big-endian format.
 
-      The header contains the following fields along with values that the tester expects -
+      You can read more about the full DNS packet format on [Wikipedia](https://en.wikipedia.org/wiki/Domain_Name_System#DNS_message_format), or
+      in [RFC 1035](https://tools.ietf.org/html/rfc1035#section-4.1). [This link](https://github.com/EmilHernvall/dnsguide/blob/b52da3b32b27c81e5c6729ac14fe01fef8b1b593/chapter1.md)
+      is a good tutorial that walks through the DNS packet format in detail.
 
-      - **Packet Identifier (ID)**: 4 bits; a random ID assigned to query packets. Response packets must reply with the same ID. Expected value: 1234.
-      - **Query/Response Indicator (QR)**: 1 bit; Query/Response Indicator. Set for a response. Expected value: Set.
-      - **Operation Code (OPCODE)**: 4 bits; specifies the kind of query in a message. Expected value: 0.
-      - **Authoritative Answer (AA)**: 1 bit; set if the responding server "owns" the domain queried, i.e., it's authoritative. Expected value: Not set.
-      - **Truncation (TC)**: 1 bit; indicates the message is larger than 512 bytes. Not set in UDP responses. Expected value: Not set.
-      - **Recursion Desired (RD)**: 1 bit; sender sets this indicating that the server should recursively resolve this query. Expected value: Not set.
-      - **Recursion Available (RA)**: 1 bit; server sets this to indicate if recursion is available. Expected value: Not set.
-      - **Reserved (Z)**: 3 bits; used by DNSSEC queries. At inception, it was reserved for future use. Expected value: 0.
-      - **Response Code (RCODE)**: 4 bits; response code indicating the status of the response. Expected value: 0 (no error).
-      - **Question Count (QDCOUNT)**: 16 bits; number of questions in the Question section. Expected value: 0.
-      - **Answer Record Count (ANCOUNT)**: 16 bits; number of records in the Answer section. Expected value: 0.
-      - **Authority Record Count (NSCOUNT)**: 16 bits; number of records in the Authority section. Expected value: 0.
-      - **Additional Record Count (ARCOUNT)**: 16 bits; number of records in the Additional section. Expected value: 0.
+      ---
 
-      We recommend that you create an internal structure for this in your language of choosing. As we will build on it.
+      Just like in the previous stage, the tester will execute your program like this:
 
-      You can refer to [this link](https://github.com/EmilHernvall/dnsguide/blob/b52da3b32b27c81e5c6729ac14fe01fef8b1b593/chapter1.md) for a tutorial diving into details of a DNS packet. [This section](https://www.rfc-editor.org/rfc/rfc1035#section-4.1.1) of the RFC covers all this in detail.
+      ```bash
+      ./your_server.sh
+      ```
+
+      It'll then send a UDP packet (containing a DNS query) to port 2053. Your program will need to respond with
+      a DNS reply packet that contains the header information described above.
+
+      We recommend creating an internal structure for a "DNS message" in your code, as we will build on this in later stages.
+
+      Note: The tester sends an extra packet at the start of testing each stage. You can ignore it.
     marketing_md: |-
       In this stage, we'll write a DNS packet's header contents
 
-  - slug: "write-question-section"
+  - legacy_slug: "write-question-section"
+    slug: "bf2"
     name: "Write question section"
     difficulty: medium
     description_md: |-
-      In this stage, we will turn our attention to the second section of the DNS packet. You will respond with a DNS packet that contains the question section. Make sure to update the `QDCOUNT` field accordingly.
-      The question section looks as follows -
+      In this stage, you'll extend your DNS server to respond with the "question" section, the second section of a DNS message.
 
-      - **Name**: Sequence of labels; encoding format. Value to Set: Encode "codecrafters-is-cool.com".
-      - **Type**: 2-byte int; the type of record. Value to Set: Encode `A` as int.
-      - **Class**: 2-byte int; the class of record. Value to Set: Encode `IN` as int.
+      ### Question section structure
 
-      The encoding format for domain names in DNS packets follows a specific structure. Each label within the domain name starts with a one-byte length indicator, representing the number of characters in the label. Following the length indicator, the actual data of the label is included. This process is repeated for each label within the domain name. The entire domain name is terminated with a null byte (`\0` or `0x00`). This method of encoding allows for efficient representation of domain names in a compact and standardized manner within DNS packets.
+      The question section contains a list of questions (usually just 1) that the sender wants to ask the receiver. This section is present
+      in both query and reply packets.
 
-      Let's look at a few examples to understand the encoding format.
-      - `google.com` will be encoded as `6google3com0` (in hex: `06 67 6f 6f 67 6c 65 03 63 6f 6d 00`)
-      - `codecrafters.io` will be encoded as `9codecrafters2io0` (in hex: `09 63 6f 6d 2e 69 6e 74 65 72 66 61 63 65 00`) (#fixme)
+      Each question has the following structure:
 
-      Remember to set the id to `1234`.
+      - **Name**: A domain name, represented as a sequence of "labels" (more on this below)
+      - **Type**: 2-byte int; the type of record (1 for an A record, 5 for a CNAME record etc., full list [here](https://www.rfc-editor.org/rfc/rfc1035#section-3.2.2))
+      - **Class**: 2-byte int; usually set to `1` (full list [here](https://www.rfc-editor.org/rfc/rfc1035#section-3.2.4))
 
-      [This section](https://www.rfc-editor.org/rfc/rfc1035#section-4.1.2) of the RFC covers all this in detail. [This section](https://www.rfc-editor.org/rfc/rfc1035#section-3.2) has more details on Type and class.
+      [Section 4.1.2](https://www.rfc-editor.org/rfc/rfc1035#section-4.1.2) of the RFC covers the question section format in
+      detail. [Section 3.2](https://www.rfc-editor.org/rfc/rfc1035#section-3.2) has more details on Type and class.
+
+      ### Domain name encoding
+
+      Domain names in DNS packets are encoded as a sequence of labels.
+
+      Labels are encoded as `<length><content>`, where `<length>` is a single byte that specifies the length of the label,
+      and `<content>` is the actual content of the label. The sequence of labels is terminated by a null byte (`\x00`).
+
+      For example:
+
+      - `google.com` is encoded as `\x06google\x03com\x00` (in hex: `06 67 6f 6f 67 6c 65 03 63 6f 6d 00`)
+        - `\x06google` is the first label
+            - `\x06` is a single byte, which is the length of the label
+            - `google` is the content of the label
+        - `\x03com` is the second label
+            - `\x03` is a single byte, which is the length of the label
+            - `com` is the content of the label
+        - `\x00` is the null byte that terminates the domain name
+
+      ---
+
+      Just like in the previous stage, the tester will execute your program like this:
+
+      ```bash
+      ./your_server.sh
+      ```
+
+      It'll then send a UDP packet (containing a DNS query) to port 2053. Your program will need to respond with a
+      DNS reply packet that contains the question section described above (along with the header section from the previous stage).
+
+      Here are the expected values for the question section:
+
+      | Field | Expected value                                                                                          |
+      | ----- | ------------------------------------------------------------------------------------------------------- |
+      | Name  | `\x0ccodecrafters\x02io` followed by a null byte (that's `codecrafters.io` encoded as a label sequence) |
+      | Type  | 1 encoded as a 2-byte big-endian int (corresponding to the "A" record type)                             |
+      | Class | 1 encoded as a 2-byte big-endian int (corresponding to the "IN" record class)                           |
+
+      Make sure to update the `QDCOUNT` field in the header section accordingly, and remember to set the id to `1234`.
     marketing_md: |-
       In this stage, we'll write a DNS packet's question section
 
-  - slug: "write-answer-section"
+  - legacy_slug: "write-answer-section"
+    slug: "xm2"
     name: "Write answer section"
     difficulty: easy
     description_md: |-
-      In this stage, we will deal with the answer section. As previously mentioned, the answer section is a list of records. Additionally, other sections too make use of this format. So after we are done here we will almost have all the pieces in place to be able to write DNS packets.
+      In this stage, you'll extend your DNS server to respond with the "answer" section, the third section of a DNS message.
 
-      Records are preceded by a premble which has the following structure -
+      ### Answer section structure
 
-      - **Name**: Label Sequence; The domain name, encoded as a sequence of labels. Value to Set: Encode "codecrafters-is-cool.com".
-      - **Type**: 2-byte Integer; The record type. Value to Set: Encode `A` as int.
-      - **Class**: 2-byte Integer; The class, typically set to 1. Value to Set: Encode `IN` as int.
-      - **TTL**: 4-byte Integer; Time-To-Live, the duration a record can be cached before requerying. Value to Set: Any chosen value.
-      - **Length**(`RDLENGTH`): 2-byte Integer; Length of the record type-specific data. Value to Set: Set to the length of the data.
+      The answer section contains a list of RRs (Resource Records), which are answers to the questions asked in the question section.
 
-      After this premble the record data follows, which varies based on the type of recrod it is. In case of an `A` record this is a 32-bit (4-bytes) integer.
+      Each RR has the following structure:
 
-      Refer to [this section](https://www.rfc-editor.org/rfc/rfc1035#section-3.2.1) of the RFC for details.
+      | Field                 | Type            | Description                                                                                                              |
+      | --------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+      | Name                  | Label Sequence  | The domain name encoded as a sequence of labels.                                                                         |
+      | Type                  | 2-byte Integer  | `1` for an A record, `5` for a CNAME record etc., full list [here](https://www.rfc-editor.org/rfc/rfc1035#section-3.2.2) |
+      | Class                 | 2-byte Integer  | Usually set to `1` (full list [here](https://www.rfc-editor.org/rfc/rfc1035#section-3.2.4))                              |
+      | TTL (Time-To-Live)    | 4-byte Integer  | The duration in seconds a record can be cached before requerying.                                                        |
+      | Length (`RDLENGTH`)   | 2-byte Integer  | Length of the RDATA field in bytes.                                                                                      |
+      | Data (`RDATA`)        | Variable        | Data specific to the record type.                                                                                        |
 
-      Remember to set the id to `1234`.
+      [Section 3.2.1](https://www.rfc-editor.org/rfc/rfc1035#section-3.2.1) of the RFC covers the answer section format in detail.
+
+      In this stage, we'll only deal with the "A" record type, which maps a domain name to an IPv4 address. The RDATA field for an "A" record
+      type is a 4-byte integer representing the IPv4 address.
+
+      ---
+
+      Just like in the previous stage, the tester will execute your program like this:
+
+      ```bash
+      ./your_server.sh
+      ```
+
+      It'll then send a UDP packet (containing a DNS query) to port 2053.
+
+      Your program will need to respond with a DNS reply packet that contains:
+
+      - a header section (same as in stage #2)
+      - a question section  (same as in stage #3)
+      - an answer section (**new in this stage!**)
+
+      Your answer section should contain a single RR, with the following values:
+
+      | Field   | Expected Value                                                                                                                     |
+      | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+      | Name    | `\x0ccodecrafters\x02io` followed by a null byte (that's `codecrafters.io` encoded as a label sequence)                            |
+      | Type    | `1` encoded as a 2-byte big-endian int (corresponding to the "A" record type)                                                      |
+      | Class   | `1` encoded as a 2-byte big-endian int (corresponding to the "IN" record class)                                                    |
+      | TTL     | Any value, encoded as a 4-byte big-endian int. For example: `60`.                                                                  |
+      | Length  | `4`, encoded as a 2-byte big-endian int (corresponds to the length of the RDATA field)                                             |
+      | Data    | Any IP address, encoded as a 4-byte big-endian int. For example: `\x08\x08\x08\x08` (that's `8.8.8.8` encoded as a 4-byte integer) |
+
+      Make sure to update the `ANCOUNT` field in the header section accordingly, and remember to set the id to `1234`.
     marketing_md: |-
       In this stage, we'll write a DNS packet's answer section
 
-  - slug: "parse-headers"
-    name: "Parse DNS Headers"
+  - legacy_slug: "parse-headers"
+    slug: "uc8"
+    name: "Parse header section"
     difficulty: hard
     description_md: |-
-      Now that we have familiarized ourselves with various DNS packet sections let's get to parsing the packet that we are getting. Starting with the header section.
+      Up until now, we were ignoring the contents of the DNS packet that we received and hardcoding `1234` as the ID in the response. In
+      this stage, you'll have to parse the DNS packet that you receive and respond with the same ID in the response. You'll also need to set
+      some other fields in the header section.
 
-      In this stage we will send random identifiers unlike the fixed identifier that we were sending in all the previous stages. You will need to parse that identifier and then send it back in your response.
+      Just like the previous stage, the tester will execute your program like this:
 
-      In addition to setting the identifier, you will also need to mimic what we send in the `RD` field. i.e. if `RD` is set then you will need to set `RD` field in the resposne and if it is not set then `RD` should be not set.
+      ```bash
+      ./your_server.sh
+      ```
 
+      It'll then send a UDP packet (containing a DNS query) to port 2053.
+
+      Your program will need to respond with a DNS reply packet that contains a header section with the following values:
+
+      | Field                              | Size    | Expected value                                                              |
+      | ---------------------------------- | ------- | --------------------------------------------------------------------------- |
+      | Packet Identifier (ID)             | 16 bits | Mimic the 16 bit packet identifier from the request packet sent by tester   |
+      | Query/Response Indicator (QR)      | 1 bit   | 1                                                                           |
+      | Operation Code (OPCODE)            | 4 bits  | Mimic the OPCODE value sent by the tester                                   |
+      | Authoritative Answer (AA)          | 1 bit   | 0                                                                           |
+      | Truncation (TC)                    | 1 bit   | 0                                                                           |
+      | Recursion Desired (RD)             | 1 bit   | Mimic the RD value sent by the tester                                       |
+      | Recursion Available (RA)           | 1 bit   | 0                                                                           |
+      | Reserved (Z)                       | 3 bits  | 0                                                                           |
+      | Response Code (RCODE)              | 4 bits  | 0 (no error) if OPCODE is 0 (standard query) else 4 (not implemented)       |
+      | Question Count (QDCOUNT)           | 16 bits | Any valid value                                                             |
+      | Answer Record Count (ANCOUNT)      | 16 bits | Any valid value                                                             |
+      | Authority Record Count (NSCOUNT)   | 16 bits | Any valid value                                                             |
+      | Additional Record Count (ARCOUNT)  | 16 bits | Any valid value                                                             |
+
+      The tester will not check what follows the header section as long as it is a valid DNS packet.
+
+      **Note**: Your code will still need to pass tests for the previous stages. You shouldn't need to hardcode `1234` as the request ID anymore
+      since the tester sends `1234` as the ID in the previous stages. As long as you implement this stage correctly, your code should automatically pass
+      the previous stages as well.
     marketing_md: |-
       In this stage, we'll parse a DNS packet's header section
 
-  - slug: "parse-question"
-    name: "Parse DNS Question"
+  - legacy_slug: "parse-question"
+    slug: "hd8"
+    name: "Parse question section"
     difficulty: easy
     description_md: |-
-      In this stage we will parse the DNS question section. You will be sent only one value in the question section and you have to parse the query and respond with the same question section in the response. As for the answer section, respond with an `A` record type which can take any value of your choosing.
+      In this stage you'll extend your DNS server to parse the question section of the DNS message you receive.
 
-      The question type will always be `A` for this stage and the question class will always be `IN`. So your parses only needs to account for those record types.
+      Just like the previous stage, the tester will execute your program like this:
 
-      DNS packets can also compress questions, that is something we will not deal with in this section. We will address this in later stages, feel free to ignore that for now.
+      ```bash
+      ./your_server.sh
+      ```
+
+      It'll then send a UDP packet (containing a DNS query) to port 2053 that contains a question section as follows:
+
+      | Field  | Value sent by the tester                                                        |
+      | ------ | --------------------------                                                      |
+      | Name   | A random domain encoded as a label sequence (refer to stage #3 for details)     |
+      | Type   | `1` encoded as a 2-byte big-endian int (corresponding to the "A" record type)   |
+      | Class  | `1` encoded as a 2-byte big-endian int (corresponding to the "IN" record class) |
+
+      The question type will always be `A` for this stage and the question class will always be `IN`. So your parser only needs to account for those record types for now.
+
+      Your program will need to respond with a DNS reply packet that contains:
+
+      - a header section (same as in stage #5)
+      - a question section (**new in this stage**)
+      - an answer section (**new in this stage**)
+
+      **Expected values for the question section**:
+
+      | Field  | Expected value                                                                  |
+      | ------ | --------------------------                                                      |
+      | Name   | Mimic the domain name (as label sequence)                                       |
+      | Type   | `1` encoded as a 2-byte big-endian int (corresponding to the "A" record type)   |
+      | Class  | `1` encoded as a 2-byte big-endian int (corresponding to the "IN" record class) |
+
+      **Expected values for the answer section**:
+
+      | Field   | Expected Value                                                                                                                     |
+      | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+      | Name    | Mimic the domain name (as label sequence)                                                                                          |
+      | Type    | `1` encoded as a 2-byte big-endian int (corresponding to the "A" record type)                                                      |
+      | Class   | `1` encoded as a 2-byte big-endian int (corresponding to the "IN" record class)                                                    |
+      | TTL     | Any value, encoded as a 4-byte big-endian int. For example: `60`.                                                                  |
+      | Length  | `4`, encoded as a 2-byte big-endian int (corresponds to the length of the RDATA field)                                             |
+      | Data    | Any IP address, encoded as a 4-byte big-endian int. For example: `\x08\x08\x08\x08` (that's `8.8.8.8` encoded as a 4-byte integer) |
+
     marketing_md: |-
       In this stage, we'll parse a DNS packet's question section
 
-  - slug: "parse-compressed-packet"
-    name: "Parse DNS packet with compressed labels"
+  - legacy_slug: "parse-compressed-packet"
+    slug: "yc9"
+    name: "Parse compressed packet"
     difficulty: medium
     description_md: |-
-      In this stage we will parse the DNS packet whoce answer section has a compressed label sequences. You will be sent one value in the question section. When you forward this to the resolver server, it will respond with a DNS packet that compresses the label sequnce. We will only ask for `A` record types here. You don't need to compress your response. We will never ask you to do something that will overflow the buffer size restriction of UDP, so compressing your response packet is not something you have to worry about.
+      In this stage we will parse the DNS question section which has compressed the question label sequences. You will be sent multiple values in the question section and you have to parse the queries and respond with the same question section (no need for compression) in the response along with answers for them. As for the answer section, respond with an `A` record type for each question. The values for these A records can be anything of your choosing.
 
-      The question type will always be `A` for this stage and the question class will always be `IN`.
+      As we already know how the Question Section and Answer Section look like from the previous stages, we will just give high level details of the packet that you are sent and what the tester expects.
+
+      Here is what the tester will send you:
+
+      ```
+      | ------------------------------------------ |
+      | Header                                     |
+      | ------------------------------------------ |
+      | Question 1 (un-compressed label sequence)  |
+      | ------------------------------------------ |
+      | Question 2 (compressed label sequence)     |
+      | ------------------------------------------ |
+      ```
+
+      What the tester expects in response:
+
+      ```
+      | ------------------------------------------ |
+      | Header                                     |
+      | ------------------------------------------ |
+      | Question 1 (un-compressed label sequence)  |
+      | ------------------------------------------ |
+      | Question 2 (un-compressed label sequence)  |
+      | ------------------------------------------ |
+      | Answer 1 (un-compressed label sequence)    |
+      | ------------------------------------------ |
+      | Answer 2 (un-compressed label sequence)    |
+      | ------------------------------------------ |
+      ```
+
+      You don't need to compress your response. We will never ask you to do something that will overflow the buffer size restriction of UDP, so compressing your response packet is not something you have to worry about. Though if you like an extra challenge feel free to compress the DNS packet, the tester will work with it too.
+
+      The question type will always be `A` and the question class will always be `IN`.
 
       [This section](https://www.rfc-editor.org/rfc/rfc1035#section-4.1.4) of the RFC covers how this compression works.
     marketing_md: |-
       In this stage, we'll parse a DNS packet's question in which the label sequences have been compressed
 
-  - slug: "forwarding-server"
+  - legacy_slug: "forwarding-server"
+    slug: "gt1"
     name: "Forwarding Server"
     difficulty: medium
     description_md: |-
-      By now I assume you are itching to get to something other than dealing with the DNS packet format. In this stage, you will implement a forwarding DNS server. Your program will be responsible for forwarding DNS queries to a specified DNS server, and then returning the response to the original requester.
+      In this stage, you will implement a forwarding DNS server.
 
-      The tester will invoke your like - `./your_server --resolver-address <address>`. You will need to forward the query you receive to this server and return the response back to the tester.
-      In this stage the server can respond with values in "Authority Section" as well as "Additional Section". So make sure that your parsing logic can handle those.
+      A forwarding DNS server, also known as a DNS forwarder, is a DNS server that is configured to pass DNS queries it receives from clients to another DNS server for resolution. Instead of directly resolving DNS queries by looking up the information in its own local cache or authoritative records.
 
-      We will only deal with `A` record types here.
+      ---
+      In this stage the tester will execute your program like this:
+
+      ```bash
+      ./your_server --resolver <address>
+      ```
+      * where `<address>` will be of the form `<ip>:<port>`
+
+      It'll then send a UDP packet (containing a DNS query) to port 2053. Your program will be responsible for forwarding DNS queries to a specified DNS server, and then returning the response to the original requester (i.e. the tester).
+
+      Your program will need to respond with a DNS reply packet that contains:
+      - a header section (same as in stage #5)
+      - a question section (same as in stage #6)
+      - an answer section (new in this stage) mimicing what you received from the DNS server to which you forwarded the request.
+
+      Here are a few assumptions you can make about the tester -
+      * It will always send you queries for `A` record type. So your parsing logic only needs to take care of this.
+
+      Here are few assumptions you can make about the DNS server you are forwarding the requests to -
+      * It will always respond with an answer section for the queries that originate from the tester.
+      * It will not contain other sections like (authority section and additional section)
+      * It will only respond when there is only one question in the question section. If you send multiple questions in the question section, it will not respond at all. So when you receive multiple questions in the question section you will need to split it into two DNS packets and then send them to this resolver then merge the response in a single packet.
+
+      Remember to mimic the packet identifier value sent by the tester in your response.
     marketing_md: |-
       In this stage, we'll call a DNS server which will do the actual DNS resolution.
