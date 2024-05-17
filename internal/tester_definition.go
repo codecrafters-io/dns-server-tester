@@ -9,35 +9,35 @@ var testerDefinition = tester_definition.TesterDefinition{
 	ExecutableFileName: "your_server.sh",
 	TestCases: []tester_definition.TestCase{
 		{
-			Slug:     "init",
+			Slug:     "ux2",
 			TestFunc: testInit,
 		},
 		{
-			Slug:     "write-headers",
+			Slug:     "tz1",
 			TestFunc: testReceiveEmptyResponse,
 		},
 		{
-			Slug:     "write-question-section",
+			Slug:     "bf2",
 			TestFunc: testReceiveQuestionInResponse,
 		},
 		{
-			Slug:     "write-answer-section",
+			Slug:     "xm2",
 			TestFunc: testReceiveAnswerInResponse,
 		},
 		{
-			Slug:     "parse-headers",
+			Slug:     "uc8",
 			TestFunc: testHeaderParsing,
 		},
 		{
-			Slug:     "parse-question",
+			Slug:     "hd8",
 			TestFunc: testBasicQuestionParsing,
 		},
 		{
-			Slug:     "parse-compressed-packet",
+			Slug:     "yc9",
 			TestFunc: testCompressedPacketParsing,
 		},
 		{
-			Slug:     "forwarding-server",
+			Slug:     "gt1",
 			TestFunc: testForwarding,
 		},
 	},

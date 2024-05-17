@@ -10,7 +10,7 @@ import (
 func TestStages(t *testing.T) {
 	testCases := map[string]tester_utils_testing.TesterOutputTestCase{
 		"init": {
-			UntilStageSlug:      "init",
+			UntilStageSlug:      "ux2",
 			CodePath:            "./test_helpers/scenarios/init/failure",
 			ExpectedExitCode:    1,
 			StdoutFixturePath:   "./test_helpers/fixtures/init/failure",
