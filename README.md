@@ -1,6 +1,6 @@
-# <fill_in_challenge_name> Challenge Tester
+# DNS Server Challenge Tester
 
-This is a program that validates your progress on the "Build your own grep" challenge.
+This is a program that validates your progress on the "Build your own DNS Server" challenge.
 
 ## Requirements for binary
 
@@ -10,6 +10,6 @@ This is a program that validates your progress on the "Build your own grep" chal
 
 ## User code requirements
 
-- A binary named `<fill_in_script_name>.sh` that executes the program.
+- A binary named `your_server.sh` that executes the program.
 - A file named `codecrafters.yml`, with the following values:
   - `debug`
