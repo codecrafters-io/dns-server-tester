@@ -8,3 +8,5 @@ cc_tests.json
 flake.lock
 flake.nix
 .envrc
+
+.history/
