@@ -5,8 +5,9 @@ import (
 )
 
 var testerDefinition = tester_definition.TesterDefinition{
-	AntiCheatTestCases: []tester_definition.TestCase{},
-	ExecutableFileName: "your_server.sh",
+	AntiCheatTestCases:       []tester_definition.TestCase{},
+	ExecutableFileName:       "your_program.sh",
+	LegacyExecutableFileName: "your_server.sh",
 	TestCases: []tester_definition.TestCase{
 		{
 			Slug:     "ux2",
