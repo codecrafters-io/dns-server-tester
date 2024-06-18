@@ -4,7 +4,7 @@ go 1.21
 
 toolchain go1.22.1
 
-require github.com/codecrafters-io/tester-utils v0.2.25
+require github.com/codecrafters-io/tester-utils v0.2.26
 
 require (
 	golang.org/x/mod v0.12.0 // indirect
