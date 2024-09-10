@@ -23,6 +23,10 @@ func testReceiveAnswerInResponse(stageHarness *test_case_harness.TestCaseHarness
 		return fmt.Errorf("%s", err)
 	}
 
+	if len(response.Question) == 0 {
+		return friendlyQuestionErr(response)
+	}
+
 	if err := validateQuestion(DEFAULT_DOMAIN, &response.Question[0]); err != nil {
 		return err
 	}
