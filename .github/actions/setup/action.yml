@@ -1,0 +1,23 @@
+# This workflow sets up the environment required for testing & generating
+# fixtures for the dns-server-tester
+
+name: 'dns-server-tester prerequisites'
+description: 'Set up dns-server-tester test prerequisites'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.24.x
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
