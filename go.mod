@@ -1,4 +1,4 @@
-module github.com/codecrafters-io/grep-tester
+module github.com/codecrafters-io/dns-server-tester
 
 go 1.24.0
 
